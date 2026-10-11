@@ -45,7 +45,7 @@ def tab_range(tab, a1):
 
 
 def already_collected(session, tab, period):
-    link = f"{SHEETS}{SHEET_ID}/values/{tab_range(tab, 'A2:B1500')}"
+    link = f"{SHEETS}{SHEET_ID}/values/{tab_range(tab, 'A2:B')}"
     data = valid_response(session.get(link, timeout=25), f"{tab} read")
     return any(len(r) >= 2 and r[0] == period[0] and r[1] == period[1]
                for r in data.get("values", []))
