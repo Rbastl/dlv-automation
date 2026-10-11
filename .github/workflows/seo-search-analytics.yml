@@ -1,0 +1,33 @@
+name: DLV SEO private search statistics
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/seo-search-analytics.yml"
+  schedule:
+    # Every Monday around 09:23 Novosibirsk (02:23 UTC).
+    - cron: "23 2 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  search:
+    name: Google Search Console + Yandex Webmaster to private Google Sheet
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Google OAuth libraries
+        run: python -m pip install "google-auth>=2.30,<3" "requests>=2.31,<3"
+      - name: Read search data and update private spreadsheet
+        run: python scripts/seo_search_analytics.py
+        env:
+          DLV_SEO_SHEET_ID: "14GI6k61MSsqpjFFm9w6fZHTteGhKvKnN3_Hn8o9Gq3k"
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          YANDEX_WEBMASTER_TOKEN: ${{ secrets.YANDEX_WEBMASTER_TOKEN }}
