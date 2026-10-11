@@ -1,0 +1,61 @@
+name: DLV SEO public monitoring
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/seo-public-monitor.yml"
+  schedule:
+    # 08:17 Novosibirsk daily (01:17 UTC)
+    - cron: "17 1 * * *"
+    # 08:47 Novosibirsk every Tuesday (01:47 UTC)
+    - cron: "47 1 * * 2"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  website:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.schedule == '17 1 * * *'
+    name: DLV site, sitemap, HTTPS and SEO
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Audit DLV public URLs
+        run: python scripts/seo_monitor.py --site
+      - name: Store public website diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dlv-public-site-report
+          path: seo-reports/site.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  competitors:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.schedule == '47 1 * * 2'
+    name: Public competitor pages (robots respected)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Weekly competitor check
+        run: python scripts/seo_monitor.py --competitors
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Save public competitor baseline
+        uses: actions/upload-artifact@v4
+        with:
+          name: dlv-public-competitors
+          path: seo-reports/competitors.json
+          if-no-files-found: error
+          retention-days: 30
