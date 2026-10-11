@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/seo-search-analytics.yml"
+      - "scripts/seo_search_analytics.py"
   schedule:
     # Every Monday around 09:23 Novosibirsk (02:23 UTC).
     - cron: "23 2 * * 1"
