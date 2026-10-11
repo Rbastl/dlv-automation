@@ -11,6 +11,7 @@ import urllib.parse
 from datetime import date, datetime, timedelta, timezone
 
 import requests
+import time
 from google.oauth2 import service_account
 from google.auth.transport.requests import AuthorizedSession
 
@@ -99,6 +100,32 @@ def google_collect(session, start, end, stamp):
         summary("Google Search Console: за период пока нет доступных поисковых строк.")
 
 
+
+
+def yandex_get(url, context, **kwargs):
+    """Retry transient API transport failures; log only safe diagnostic categories."""
+    for attempt in range(3):
+        try:
+            return valid_response(requests.get(url, **kwargs), context)
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as exc:
+            if attempt < 2:
+                time.sleep((2, 5)[attempt])
+                continue
+            kind = type(exc).__name__
+            reason = str(exc).lower()
+            if "nameresolutionerror" in reason or "failed to resolve" in reason or "getaddrinfo" in reason:
+                kind += "/DNS"
+            elif "proxyerror" in reason or "proxy" in reason:
+                kind += "/proxy"
+            elif "ssl" in reason or "certificate" in reason:
+                kind += "/TLS"
+            elif "connection refused" in reason or "connection reset" in reason:
+                kind += "/connection"
+            summary("Яндекс Вебмастер: сетевой сбой на этапе " + context
+                    + " (" + kind + ", 3 попытки).")
+            raise RuntimeError("Yandex connectivity failed at " + context) from None
+
+
 def yandex_collect(session, start, end, stamp):
     if not YANDEX_TOKEN:
         summary("Яндекс Вебмастер: OAuth-токен ещё не задан в GitHub Secrets.")
@@ -109,14 +136,14 @@ def yandex_collect(session, start, end, stamp):
         return
     headers = {"Authorization": "OAuth " + YANDEX_TOKEN,
                "Accept": "application/json"}
-    user = valid_response(requests.get(WEBMASTER + "/user",
-                                       headers=headers, timeout=25), "Yandex user")
+    user = yandex_get(WEBMASTER + "/user", "Yandex user",
+                      headers=headers, timeout=25)
     user_id = user.get("user_id")
     if user_id is None:
         raise RuntimeError("Yandex user: no user_id")
     base = f"{WEBMASTER}/user/{urllib.parse.quote(str(user_id), safe='')}"
-    hosts_data = valid_response(requests.get(base + "/hosts",
-                                             headers=headers, timeout=25), "Yandex hosts")
+    hosts_data = yandex_get(base + "/hosts", "Yandex hosts",
+                            headers=headers, timeout=25)
     hosts = hosts_data.get("hosts", [])
     candidates = [h for h in hosts if h.get("verified")
                   and urllib.parse.urlsplit(h.get("ascii_host_url", "")).hostname in
@@ -139,8 +166,8 @@ def yandex_collect(session, start, end, stamp):
         ("date_from", period[0]), ("date_to", period[1]),
         ("limit", "250"),
     ]
-    result = valid_response(requests.get(url, headers=headers, params=params,
-                                         timeout=35), "Yandex search queries")
+    result = yandex_get(url, "Yandex search queries",
+                        headers=headers, params=params, timeout=35)
     rows = []
     for entry in result.get("queries", []):
         i = entry.get("indicators", {})
