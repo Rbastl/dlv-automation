@@ -198,7 +198,12 @@ def main():
     start = end - timedelta(days=6)
     stamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
     failed = False
-    for name, run in (("Google", google_collect), ("Яндекс", yandex_collect)):
+    collectors = [("Google", google_collect)]
+    if os.getenv("DLV_YANDEX_ENABLED", "false").strip().lower() in ("1", "true", "yes"):
+        collectors.append(("Яндекс", yandex_collect))
+    else:
+        summary("Яндекс Вебмастер: временно приостановлен; Google работает независимо.")
+    for name, run in collectors:
         try:
             run(session, start, end, stamp)
         except Exception as exc:
