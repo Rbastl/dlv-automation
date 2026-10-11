@@ -1,0 +1,29 @@
+{
+  "description": "Only publicly visible pages. Weekly respectful checks with robots.txt and no bypassing access restrictions.",
+  "sites": [
+    {
+      "name": "АС Инжиниринг",
+      "url": "https://www.aseng.ru/"
+    },
+    {
+      "name": "РусАвтоматизация — программирование",
+      "url": "https://rusautomation.ru/services/programmirovanie/"
+    },
+    {
+      "name": "Промси — PLC/HMI/SCADA",
+      "url": "https://proms-i.ru/program-asu-tp-plc-hmi-scada/"
+    },
+    {
+      "name": "Миком-Сервис — ПО АСУ ТП",
+      "url": "https://mic-s.ru/uslugi/razrabotka-programmnogo-obespecheniia-asu-tp2"
+    },
+    {
+      "name": "Level of Automation",
+      "url": "https://www.levela.ru/"
+    },
+    {
+      "name": "КонсОМ — SCADA",
+      "url": "https://www.konsom.ru/solutions/dispetcherskij-kontrol-i-upravlenie/sistemy-integratsii-tehnologicheskih-dannyh-predpriyatiya-pk-paradigma/proektirovanie-scada-sistem/"
+    }
+  ]
+}
