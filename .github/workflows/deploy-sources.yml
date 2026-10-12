@@ -1,0 +1,62 @@
+name: DLV hosting source diagnostics
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/deploy-sources.yml"
+      - "sitemap.xml"
+
+permissions:
+  contents: read
+
+jobs:
+  hosts:
+    name: Compare domain, Netlify technical host and GitHub Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read-only cross-host deployment diagnosis
+        shell: bash
+        run: |
+          python - <<'PY'
+          import urllib.request
+          import urllib.error
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          NS = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+          local = ET.parse("sitemap.xml")
+          expected = [e.text.strip() for e in local.findall(".//s:url/s:loc", NS) if e.text]
+          print("Expected URLs in GitHub main:", len(expected))
+          sources = [
+              ("Apex", "https://dlvautomation.ru"),
+              ("Netlify alias", "https://moonlit-crostata-3b414a.netlify.app"),
+              ("GitHub Pages", "https://rbastl.github.io/dlv-automation"),
+          ]
+          for name, base in sources:
+              for path in ("/sitemap.xml", "/uslugi/"):
+                  link = base + path
+                  try:
+                      req = urllib.request.Request(link, headers={
+                          "User-Agent": "DLVAutomationDeployCheck/1.0",
+                          "Accept": "text/html,application/xml,*/*",
+                      })
+                      with urllib.request.urlopen(req, timeout=14) as response:
+                          data = response.read(250000)
+                          code = response.status
+                          final = response.geturl()
+                          server = response.headers.get("Server", "-")
+                          netlify_request = "yes" if response.headers.get("x-nf-request-id") else "no"
+                      details = []
+                      if path.endswith("sitemap.xml"):
+                          root = ET.fromstring(data)
+                          entries = [e.text for e in root.findall(".//s:url/s:loc", NS)]
+                          details = ["urls=" + str(len(entries)),
+                                     "new_hub=" + str(any(u and u.endswith("/uslugi/") for u in entries))]
+                      print(f"{name}: {path} HTTP={code}; final={final}; server={server}; netlify_header={netlify_request}; " + ", ".join(details))
+                  except Exception as exc:
+                      print(f"{name}: {path} unavailable ({type(exc).__name__})")
+          PY
