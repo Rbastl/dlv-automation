@@ -108,8 +108,8 @@ def audit_site():
         urls = [node.text.strip() for node in doc.findall(".//sm:url/sm:loc", ns) if node.text]
         if not urls or len(urls) != len(set(urls)):
             errors.append("Sitemap is empty or has duplicate URLs.")
-        if len(urls) < 29:
-            warnings.append("Sitemap has fewer than 29 pages (new SEO pages might not be deployed).")
+        if len(urls) < 39:
+            warnings.append("Sitemap has fewer than 39 pages (new SEO pages might not be deployed).")
     except Exception as exc:
         errors.append("sitemap.xml: " + str(exc))
         urls = []
