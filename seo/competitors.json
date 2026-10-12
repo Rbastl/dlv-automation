@@ -1,5 +1,5 @@
 {
-  "description": "Only publicly visible pages. Weekly respectful checks with robots.txt and no bypassing access restrictions.",
+  "description": "Only publicly visible pages, compared weekly with robots.txt respected. The report tracks title/H1/description changes, NOT verified website traffic volumes. Domain/brand ambiguity remains for АСЭ/АСЕ.",
   "sites": [
     {
       "name": "АС Инжиниринг",
@@ -24,6 +24,46 @@
     {
       "name": "КонсОМ — SCADA",
       "url": "https://www.konsom.ru/solutions/dispetcherskij-kontrol-i-upravlenie/sistemy-integratsii-tehnologicheskih-dannyh-predpriyatiya-pk-paradigma/proektirovanie-scada-sistem/"
+    },
+    {
+      "name": "ПАГ — электронный журнал CIP",
+      "url": "https://www.pag.company/catalog/kontrol-i-analitika-moek-cipmonitor/"
+    },
+    {
+      "name": "ПАГ — производственные данные",
+      "url": "https://www.pag.company/catalog/kontrol-i-analitika-proizvodstva-processmonitor/"
+    },
+    {
+      "name": "ПАГ — маркировка и упаковка",
+      "url": "https://www.pag.company/catalog/markirovka-gotovoy-produktsii-t-tmonitor/"
+    },
+    {
+      "name": "ВЕКАС — промышленная автоматизация",
+      "url": "https://vekas-automation.ru/"
+    },
+    {
+      "name": "ВЕКАС — CIP analytics",
+      "url": "https://vekas-automation.ru/?solutions=cip-analytics&lang=en"
+    },
+    {
+      "name": "Продексис — MES и АСУ ТП",
+      "url": "https://prodexsys.ru/"
+    },
+    {
+      "name": "Свободные технологии / FreeTech",
+      "url": "https://free-tech.ru/"
+    },
+    {
+      "name": "FreeTech — автоматика технологического оборудования",
+      "url": "https://free-tech.ru/napravleniya-biznesa/avtomatizaciya-tehnologicheskih-processov-predpriyatiy/"
+    },
+    {
+      "name": "Рубикон — инженерная автоматика",
+      "url": "https://ecrubicon.ru/"
+    },
+    {
+      "name": "Автоматика.ру — онлайн-конструктор",
+      "url": "https://avtomatika.ru/"
     }
   ]
 }
