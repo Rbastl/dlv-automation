@@ -63,6 +63,46 @@ def append_private(session, tab, rows):
     return True
 
 
+
+def google_summary_and_pages(session, endpoint, period, stamp):
+    """Store total impressions (including anonymous queries) and page-level KPIs.
+
+    Query+page rows alone can undercount impressions because Search Console
+    anonymizes some search terms. All data remains in the private spreadsheet.
+    """
+    if not already_collected(session, "Сводка", period):
+        response = valid_response(session.post(endpoint, json={
+            "startDate": period[0], "endDate": period[1],
+            "type": "web", "rowLimit": 1,
+        }, timeout=35), "Search Console site totals")
+        metric = (response.get("rows") or [{}])[0]
+        append_private(session, "Сводка", [[
+            period[0], period[1],
+            metric.get("clicks", 0), metric.get("impressions", 0),
+            metric.get("ctr", 0), metric.get("position", 0), stamp
+        ]])
+        summary("Google Search Console: суммарные показатели записаны в закрытую вкладку «Сводка».")
+    if not already_collected(session, "Страницы", period):
+        response = valid_response(session.post(endpoint, json={
+            "startDate": period[0], "endDate": period[1],
+            "dimensions": ["page"], "type": "web", "rowLimit": 1000,
+        }, timeout=35), "Search Console pages report")
+        rows = []
+        for line in response.get("rows", []):
+            keys = line.get("keys", [])
+            if not keys or not keys[0].startswith("https://" + SITE_HOST + "/"):
+                continue
+            rows.append([
+                period[0], period[1], keys[0],
+                line.get("clicks", 0), line.get("impressions", 0),
+                line.get("ctr", 0), line.get("position", 0), stamp
+            ])
+        if append_private(session, "Страницы", rows):
+            summary("Google Search Console: отчёт по URL записан в закрытую вкладку «Страницы».")
+        else:
+            summary("Google Search Console: по отдельным URL пока нет доступных данных.")
+
+
 def google_collect(session, start, end, stamp):
     sites_data = valid_response(
         session.get("https://www.googleapis.com/webmasters/v3/sites", timeout=25),
@@ -76,11 +116,12 @@ def google_collect(session, start, end, stamp):
         summary("Google Search Console: технической учётной записи не предоставлен доступ к ресурсу DLV.")
         return
     period = [str(start), str(end)]
-    if already_collected(session, "Google", period):
-        summary("Google Search Console: период уже загружен, дубли не создавались.")
-        return
     endpoint = ("https://www.googleapis.com/webmasters/v3/sites/"
                 + urllib.parse.quote(property_url, safe="") + "/searchAnalytics/query")
+    google_summary_and_pages(session, endpoint, period, stamp)
+    if already_collected(session, "Google", period):
+        summary("Google Search Console: поисковые запросы за период уже загружены, дубли не создавались.")
+        return
     response = session.post(endpoint, json={
         "startDate": period[0], "endDate": period[1],
         "dimensions": ["query", "page"], "type": "web", "rowLimit": 1000,
