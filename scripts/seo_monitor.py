@@ -103,13 +103,37 @@ def audit_site():
         status, _, body = request(HOME + "/sitemap.xml", timeout=14)
         if status != 200:
             raise ValueError("sitemap HTTP " + str(status))
-        doc = ET.fromstring(body)
         ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+        doc = ET.fromstring(body)
         urls = [node.text.strip() for node in doc.findall(".//sm:url/sm:loc", ns) if node.text]
+        local_doc = ET.parse("sitemap.xml")
+        expected_urls = [node.text.strip() for node in local_doc.findall(".//sm:url/sm:loc", ns) if node.text]
         if not urls or len(urls) != len(set(urls)):
             errors.append("Sitemap is empty or has duplicate URLs.")
-        if len(urls) < 39:
-            warnings.append("Sitemap has fewer than 39 pages (new SEO pages might not be deployed).")
+        if not expected_urls or len(expected_urls) != len(set(expected_urls)):
+            errors.append("Repository sitemap is empty or has duplicate URLs.")
+        if urls != expected_urls:
+            # On push, Netlify can lag a GitHub commit. Retry a pending deploy,
+            # then fail rather than reporting a stale sitemap as a successful audit.
+            polls = 12 if os.getenv("GITHUB_EVENT_NAME") == "push" else 0
+            for _ in range(polls):
+                time.sleep(15)
+                status, _, body = request(HOME + "/sitemap.xml", timeout=14)
+                if status != 200:
+                    continue
+                doc = ET.fromstring(body)
+                urls = [node.text.strip() for node in doc.findall(".//sm:url/sm:loc", ns) if node.text]
+                if urls == expected_urls:
+                    break
+            if urls != expected_urls:
+                missing = sorted(set(expected_urls) - set(urls))
+                unexpected = sorted(set(urls) - set(expected_urls))
+                errors.append("Published sitemap differs from GitHub main: "
+                              f"public={len(urls)}, expected={len(expected_urls)}; "
+                              f"missing={len(missing)}, unexpected={len(unexpected)}. "
+                              "Netlify deploy may be pending or disconnected.")
+                for link in missing[:8]:
+                    warnings.append("Missing on published sitemap: " + link)
     except Exception as exc:
         errors.append("sitemap.xml: " + str(exc))
         urls = []
