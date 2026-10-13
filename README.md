@@ -10,4 +10,4 @@ Repository for managing, updating and publishing the DLV Automation website.
 
 ## Publishing
 
-GitHub is the source of truth. The new paid Timeweb hosting target is configured with an encrypted GitHub Actions FTPS deployment (`.github/workflows/deploy-timeweb.yml`). DNS stays at the old production host until Timeweb is verified. See [TIMEWEB_DEPLOY_SETUP.md](TIMEWEB_DEPLOY_SETUP.md) for the no-downtime switch.
+GitHub `main` is the source of truth. Timeweb will securely pull public website updates via HTTPS using [scripts/timeweb_sync_from_github.sh](scripts/timeweb_sync_from_github.sh) and scheduled Timeweb Cron (after the trial period). Timeweb FTPS was unreliable and is disabled for automatic pushes. DNS remains on the existing live site until Timeweb is verified. See [TIMEWEB_DEPLOY_SETUP.md](TIMEWEB_DEPLOY_SETUP.md).

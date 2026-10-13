@@ -1,0 +1,38 @@
+name: DLV test Timeweb HTTPS pull deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/timeweb_sync_from_github.sh"
+      - ".github/workflows/timeweb-https-pull-test.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    name: Validate safe publishing in an isolated temporary folder
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shell syntax and public package simulation
+        shell: bash
+        run: |
+          sh -n scripts/timeweb_sync_from_github.sh
+          export HOME="$RUNNER_TEMP/timeweb-test-account"
+          mkdir -p "$HOME/dlvautomation/public_html"
+          /bin/sh scripts/timeweb_sync_from_github.sh
+          test -s "$HOME/dlvautomation/public_html/index.html"
+          test -s "$HOME/dlvautomation/public_html/uslugi/index.html"
+          test -s "$HOME/dlvautomation/public_html/sitemap.xml"
+          test -s "$HOME/dlvautomation/public_html/.htaccess"
+          test ! -e "$HOME/dlvautomation/public_html/.github"
+          test ! -e "$HOME/dlvautomation/public_html/scripts"
+          test ! -e "$HOME/dlvautomation/public_html/.git"
+          grep -q '<loc>https://dlvautomation.ru/uslugi/</loc>' "$HOME/dlvautomation/public_html/sitemap.xml"
+          count=$(grep -c '<loc>' "$HOME/dlvautomation/public_html/sitemap.xml")
+          test "$count" -ge 40
+          echo "PASS: $count public URLs copied and no repository internals exposed."
