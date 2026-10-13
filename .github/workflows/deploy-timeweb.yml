@@ -1,28 +1,10 @@
-name: DLV publish to Timeweb (FTPS)
+name: DLV legacy FTPS deploy (manual only)
 
+# Timeweb FTP endpoint rejected AUTH TLS on port 21.
+# Do not automatically run failed FTPS publishing on each website change.
+# Use the Timeweb-side HTTPS pull script via Cron instead.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "*.html"
-      - "**/*.html"
-      - "*.css"
-      - "**/*.css"
-      - "*.js"
-      - "**/*.js"
-      - "*.svg"
-      - "**/*.svg"
-      - "*.png"
-      - "**/*.png"
-      - "*.jpg"
-      - "**/*.jpg"
-      - "*.webp"
-      - "**/*.webp"
-      - "*.xml"
-      - "*.txt"
-      - "scripts/build_timeweb_site.py"
-      - ".github/workflows/deploy-timeweb.yml"
 
 permissions:
   contents: read
