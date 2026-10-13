@@ -1,0 +1,53 @@
+name: DLV Timeweb encrypted FTP sign-in test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/timeweb-ftps-auth-test.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  login:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Test FTPS authentication without transferring files
+        env:
+          FTP_HOST: ${{ secrets.TIMEWEB_FTP_SERVER }}
+          FTP_USER: ${{ secrets.TIMEWEB_FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.TIMEWEB_FTP_PASSWORD }}
+        run: |
+          python3 - <<'PY'
+          import ftplib, os, ssl, sys
+          host, user, passwd = (os.environ.get(k, "") for k in
+              ("FTP_HOST", "FTP_USER", "FTP_PASSWORD"))
+          if not (host and user and passwd):
+              print("FAIL: One or more FTP secrets are missing")
+              sys.exit(1)
+          ftp = ftplib.FTP_TLS(context=ssl.create_default_context(), timeout=12)
+          try:
+              ftp.connect(host, 21)
+              print("PASS: TCP connected on port 21")
+              ftp.auth()
+              print("PASS: AUTH TLS negotiated and server certificate validated")
+              ftp.login(user, passwd, secure=False)
+              print("PASS: FTP username and password accepted")
+              ftp.prot_p()
+              print("PASS: FTPS secure data channel selected")
+              ftp.pwd()
+              print("PASS: FTP working directory is accessible")
+          except ftplib.error_perm as exc:
+              print("FAIL: Server rejected a command, FTP code: " + str(exc)[:3])
+              print("Last verified step is above (never print secrets).")
+              sys.exit(2)
+          except Exception as exc:
+              print("FAIL: FTPS connectivity error: " + type(exc).__name__)
+              sys.exit(3)
+          finally:
+              try: ftp.close()
+              except Exception: pass
+          PY
