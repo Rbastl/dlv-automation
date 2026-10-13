@@ -60,6 +60,10 @@ jobs:
       - name: Publish public files through encrypted FTPS
         if: steps.ready.outputs.configured == 'yes'
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        env:
+          # Shared hosting offers IPv4 and IPv6, but GitHub's runner has no IPv6 route.
+          # Disable Node's dual-stack auto-selection, preserve DNS name for TLS SNI.
+          NODE_OPTIONS: "--dns-result-order=ipv4first --no-network-family-autoselection"
         with:
           server: ${{ secrets.TIMEWEB_FTP_SERVER }}
           username: ${{ secrets.TIMEWEB_FTP_USER }}
