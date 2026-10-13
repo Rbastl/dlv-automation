@@ -10,4 +10,4 @@ Repository for managing, updating and publishing the DLV Automation website.
 
 ## Publishing
 
-This repository is intended for GitHub Pages with a custom domain.
+GitHub is the source of truth. The new paid Timeweb hosting target is configured with an encrypted GitHub Actions FTPS deployment (`.github/workflows/deploy-timeweb.yml`). DNS stays at the old production host until Timeweb is verified. See [TIMEWEB_DEPLOY_SETUP.md](TIMEWEB_DEPLOY_SETUP.md) for the no-downtime switch.
