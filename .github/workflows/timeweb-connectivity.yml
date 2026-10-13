@@ -1,0 +1,47 @@
+name: DLV Timeweb network preflight
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/timeweb-connectivity.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check Timeweb server reachability from GitHub runner
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Test TCP access without any FTP credentials
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import socket
+          import urllib.request
+          host = "vh276.timeweb.ru"
+          try:
+              ip = socket.gethostbyname(host)
+              print(f"Timeweb server DNS A: {ip}")
+          except OSError as e:
+              print(f"Timeweb DNS lookup failed: {type(e).__name__}")
+              raise SystemExit(1)
+          try:
+              outbound = urllib.request.urlopen("https://api.ipify.org", timeout=8).read(80).decode().strip()
+              print("Runner outbound IPv4:", outbound)
+          except Exception as e:
+              print("Runner public IP unavailable:", type(e).__name__)
+          for port in (21, 22, 990, 80, 443):
+              sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+              sock.settimeout(5)
+              try:
+                  sock.connect((ip, port))
+                  print(f"Timeweb TCP IPv4 port {port}: CONNECTED")
+              except Exception as e:
+                  print(f"Timeweb TCP IPv4 port {port}: {type(e).__name__}")
+              finally:
+                  sock.close()
+          PY
