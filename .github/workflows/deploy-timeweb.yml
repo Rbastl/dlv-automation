@@ -1,0 +1,81 @@
+name: DLV publish to Timeweb (FTPS)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "*.html"
+      - "**/*.html"
+      - "*.css"
+      - "**/*.css"
+      - "*.js"
+      - "**/*.js"
+      - "*.svg"
+      - "**/*.svg"
+      - "*.png"
+      - "**/*.png"
+      - "*.jpg"
+      - "**/*.jpg"
+      - "*.webp"
+      - "**/*.webp"
+      - "*.xml"
+      - "*.txt"
+      - "scripts/build_timeweb_site.py"
+      - ".github/workflows/deploy-timeweb.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dlv-timeweb-production
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Prepare public site and upload to Timeweb by FTPS
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Read only current website sources
+        uses: actions/checkout@v4
+
+      - name: Build safe static website package
+        run: python3 scripts/build_timeweb_site.py
+
+      - name: Detect whether Timeweb deployment is activated
+        id: ready
+        env:
+          HOST: ${{ secrets.TIMEWEB_FTP_SERVER }}
+          USER: ${{ secrets.TIMEWEB_FTP_USER }}
+          PASSWORD: ${{ secrets.TIMEWEB_FTP_PASSWORD }}
+        run: |
+          if [[ -n "$HOST" && -n "$USER" && -n "$PASSWORD" ]]; then
+            echo "configured=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=no" >> "$GITHUB_OUTPUT"
+            echo "Timeweb not activated: add three repository secrets TIMEWEB_FTP_SERVER, TIMEWEB_FTP_USER, TIMEWEB_FTP_PASSWORD." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Publish public files through encrypted FTPS
+        if: steps.ready.outputs.configured == 'yes'
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.TIMEWEB_FTP_SERVER }}
+          username: ${{ secrets.TIMEWEB_FTP_USER }}
+          password: ${{ secrets.TIMEWEB_FTP_PASSWORD }}
+          port: 21
+          protocol: ftps
+          security: strict
+          local-dir: ./site-dist/
+          # FTP user is restricted to dlvautomation/public_html in Timeweb.
+          # Its FTP root is already the site directory; do not repeat that path.
+          server-dir: ./
+          dangerous-clean-slate: false
+          log-level: standard
+          timeout: 120000
+
+      - name: Report deployment
+        if: steps.ready.outputs.configured == 'yes'
+        run: |
+          echo "FTPS deployment finished. Check the Timeweb staging address before switching DNS. Do not assume HTTPS on dlvautomation.ru has migrated yet." >> "$GITHUB_STEP_SUMMARY"
