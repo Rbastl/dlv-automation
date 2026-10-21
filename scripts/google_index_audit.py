@@ -8,6 +8,7 @@ import json
 import os
 import sys
 import time
+import requests
 import urllib.parse
 import xml.etree.ElementTree as ET
 from collections import Counter
@@ -75,10 +76,23 @@ def append_private(session, records):
 
 
 def inspect(session, url, prop):
-    response = session.post(INSPECTION_ENDPOINT, json={
-        "inspectionUrl": url, "siteUrl": prop, "languageCode": "ru-RU",
-    }, timeout=25)
-    result = data_or_error(response, "Google URL inspection")
+    payload = {"inspectionUrl": url, "siteUrl": prop, "languageCode": "ru-RU"}
+    # Retry only transient transport/5xx failures, not quota or permission errors.
+    # The service account stays read-only for Search Console.
+    for attempt in range(3):
+        try:
+            response = session.post(
+                INSPECTION_ENDPOINT, json=payload, timeout=(10, 35))
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+            if attempt == 2:
+                raise
+            time.sleep(2 * (attempt + 1))
+            continue
+        if response.status_code in (500, 502, 503, 504) and attempt < 2:
+            time.sleep(2 * (attempt + 1))
+            continue
+        result = data_or_error(response, "Google URL inspection")
+        break
     detail = result.get("inspectionResult", {})
     state = detail.get("indexStatusResult", {})
     return [
