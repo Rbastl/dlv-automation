@@ -46,7 +46,7 @@ jobs:
               ("GitHub Pages", "https://rbastl.github.io/dlv-automation"),
           ]
           for name, base in sources:
-              for path in ("/sitemap.xml", "/uslugi/"):
+              for path in ("/sitemap.xml", "/uslugi/", "/programmirovanie-plk/", "/dlv-deploy-revision.txt"):
                   link = base + path
                   try:
                       req = urllib.request.Request(link, headers={
@@ -65,6 +65,10 @@ jobs:
                           entries = [e.text for e in root.findall(".//s:url/s:loc", NS)]
                           details = ["urls=" + str(len(entries)),
                                      "new_hub=" + str(any(u and u.endswith("/uslugi/") for u in entries))]
+                      if path == "/programmirovanie-plk/":
+                          details = ["seo_21oct_marker=" + str(b"DLV-SEO-SPRINT-20261021" in data)]
+                      if path == "/dlv-deploy-revision.txt":
+                          details = ["deployed_revision=" + data.decode("utf-8", errors="replace").strip()[:45]]
                       print(f"{name}: {path} HTTP={code}; final={final}; server={server}; netlify_header={netlify_request}; " + ", ".join(details))
                   except Exception as exc:
                       print(f"{name}: {path} unavailable ({type(exc).__name__}: {str(exc)[:160]})")
