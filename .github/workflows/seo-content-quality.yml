@@ -48,7 +48,7 @@ jobs:
               html = path.read_text(encoding="utf-8")
               canonical = f"https://dlvautomation.ru/{folder}/"
               assert html.count("<!-- DLV-SEO-SPRINT-20261021 -->") == 1, path
-              assert len(re.findall(r"<h1\\b", html)) == 1, path
+              assert len(re.findall(r"<h1\b", html)) == 1, path
               assert f'rel="canonical" href="{canonical}"' in html, path
               assert html.count("<section ") == html.count("</section>"), path
               assert html.count("<div ") == html.count("</div>"), path
