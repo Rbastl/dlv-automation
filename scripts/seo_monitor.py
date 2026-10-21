@@ -131,7 +131,7 @@ def audit_site():
                 errors.append("Published sitemap differs from GitHub main: "
                               f"public={len(urls)}, expected={len(expected_urls)}; "
                               f"missing={len(missing)}, unexpected={len(unexpected)}. "
-                              "Netlify deploy may be pending or disconnected.")
+                              "Production sitemap may be stale: check Timeweb sync or DNS.")
                 for link in missing[:8]:
                     warnings.append("Missing on published sitemap: " + link)
     except Exception as exc:
