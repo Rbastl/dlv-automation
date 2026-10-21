@@ -24,6 +24,7 @@ jobs:
           python - <<'PY'
           import urllib.request
           import urllib.error
+          import socket
           import xml.etree.ElementTree as ET
           from pathlib import Path
 
@@ -31,6 +32,14 @@ jobs:
           local = ET.parse("sitemap.xml")
           expected = [e.text.strip() for e in local.findall(".//s:url/s:loc", NS) if e.text]
           print("Expected URLs in GitHub main:", len(expected))
+          # DNS diagnosis for apex and www; public IPs only, no credentials.
+          for hostname in ("dlvautomation.ru", "www.dlvautomation.ru"):
+              try:
+                  ips = sorted({entry[4][0] for entry in
+                                socket.getaddrinfo(hostname, 443, socket.AF_INET, socket.SOCK_STREAM)})
+                  print("DNS A:", hostname, ips)
+              except OSError as exc:
+                  print("DNS A:", hostname, "unavailable", type(exc).__name__, str(exc)[:130])
           sources = [
               ("Apex", "https://dlvautomation.ru"),
               ("Netlify alias", "https://moonlit-crostata-3b414a.netlify.app"),
@@ -58,5 +67,5 @@ jobs:
                                      "new_hub=" + str(any(u and u.endswith("/uslugi/") for u in entries))]
                       print(f"{name}: {path} HTTP={code}; final={final}; server={server}; netlify_header={netlify_request}; " + ", ".join(details))
                   except Exception as exc:
-                      print(f"{name}: {path} unavailable ({type(exc).__name__})")
+                      print(f"{name}: {path} unavailable ({type(exc).__name__}: {str(exc)[:160]})")
           PY
