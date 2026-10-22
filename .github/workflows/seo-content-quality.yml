@@ -24,7 +24,7 @@ jobs:
         run: |
           python3 -m py_compile scripts/google_index_audit.py scripts/seo_monitor.py scripts/seo_search_analytics.py
           python3 scripts/build_timeweb_site.py
-      - name: Validate six commercial SEO pages without changing site design
+      - name: Validate 42 URL sitemap, services, engineering articles and portfolio
         shell: bash
         run: |
           python3 - <<'PY'
@@ -41,13 +41,14 @@ jobs:
           root = ET.parse("sitemap.xml")
           entries = root.findall(".//s:url", ns)
           urls = [e.findtext("s:loc", namespaces=ns) for e in entries]
-          assert len(urls) >= 40 and len(urls) == len(set(urls)), "Sitemap duplicated/missing URLs"
+          assert len(urls) == 42 and len(urls) == len(set(urls)), "Sitemap must contain exactly 42 unique URLs"
           assert "https://dlvautomation.ru/uslugi/" in urls, "Service catalog missing"
           for folder in folders:
               path = Path(folder) / "index.html"
               html = path.read_text(encoding="utf-8")
               canonical = f"https://dlvautomation.ru/{folder}/"
               assert html.count("<!-- DLV-SEO-SPRINT-20261021 -->") == 1, path
+              assert html.count("<!-- DLV-SEO-SPRINT-20261022 -->") == 1, path
               assert len(re.findall(r"<h1\b", html)) == 1, path
               assert f'rel="canonical" href="{canonical}"' in html, path
               assert html.count("<section ") == html.count("</section>"), path
@@ -55,9 +56,30 @@ jobs:
               element = next((e for e in entries
                               if e.findtext("s:loc", namespaces=ns) == canonical), None)
               assert element is not None, folder
-              assert element.findtext("s:lastmod", namespaces=ns) == "2026-10-21", folder
+              assert element.findtext("s:lastmod", namespaces=ns) == "2026-10-22", folder
               for link in re.findall(r'href="(/[^"#?]+/)"', html):
                   target = Path(link.lstrip("/")) / "index.html" if link != "/" else Path("index.html")
                   assert target.exists(), f"{path}: broken internal link {link}"
-          print("PASS: 40+ sitemap URLs, 6 revised pages, canonical, dates and internal links")
+          portfolio = Path("projects/index.html").read_text(encoding="utf-8")
+          assert len(re.findall(r'id="project-\\d{2}"', portfolio)) == 21, "Expected 21 stable case anchors"
+          assert portfolio.count("project-service-link") >= 13, "Projects need links back to services"
+          for slug in ("fat-io-testy-pnr-asu-tp", "signaly-obmena-mezhdu-plk"):
+              path = Path("blog") / slug / "index.html"
+              html = path.read_text(encoding="utf-8")
+              canonical = f"https://dlvautomation.ru/blog/{slug}/"
+              assert html.count("<h1") == 1, path
+              assert f'rel="canonical" href="{canonical}"' in html, path
+              assert html.count("<div ") == html.count("</div>"), path
+              assert html.count("<section ") == html.count("</section>"), path
+              assert canonical in urls, path
+              assert html.count("2026-10-22") >= 2, path
+              assert html.count('application/ld+json') >= 1, path
+          blog = Path("blog/index.html").read_text(encoding="utf-8")
+          for slug in ("fat-io-testy-pnr-asu-tp", "signaly-obmena-mezhdu-plk"):
+              assert f'/blog/{slug}/' in blog, "New guide missing from blog hub"
+          for folder in folders:
+              html = (Path(folder) / "index.html").read_text(encoding="utf-8")
+              for anchor in re.findall(r'href="/projects/#(project-\\d{2})"', html):
+                  assert f'id="{anchor}"' in portfolio, f"Broken portfolio anchor: {anchor}"
+          print("PASS: 42 URLs, six service pages, 21 portfolio anchors, two guides and internal links")
           PY
