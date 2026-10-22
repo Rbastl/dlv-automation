@@ -51,7 +51,7 @@ jobs:
               assert html.count("<!-- DLV-SEO-SPRINT-20261022 -->") == 1, path
               assert len(re.findall(r"<h1\b", html)) == 1, path
               assert f'rel="canonical" href="{canonical}"' in html, path
-              assert html.count("<section ") == html.count("</section>"), path
+              assert len(re.findall(r"<section\b", html)) == html.count("</section>"), path
               assert html.count("<div ") == html.count("</div>"), path
               element = next((e for e in entries
                               if e.findtext("s:loc", namespaces=ns) == canonical), None)
@@ -61,7 +61,7 @@ jobs:
                   target = Path(link.lstrip("/")) / "index.html" if link != "/" else Path("index.html")
                   assert target.exists(), f"{path}: broken internal link {link}"
           portfolio = Path("projects/index.html").read_text(encoding="utf-8")
-          assert len(re.findall(r'id="project-\\d{2}"', portfolio)) == 21, "Expected 21 stable case anchors"
+          assert len(re.findall(r'id="project-\d{2}"', portfolio)) == 21, "Expected 21 stable case anchors"
           assert portfolio.count("project-service-link") >= 13, "Projects need links back to services"
           for slug in ("fat-io-testy-pnr-asu-tp", "signaly-obmena-mezhdu-plk"):
               path = Path("blog") / slug / "index.html"
@@ -70,7 +70,7 @@ jobs:
               assert html.count("<h1") == 1, path
               assert f'rel="canonical" href="{canonical}"' in html, path
               assert html.count("<div ") == html.count("</div>"), path
-              assert html.count("<section ") == html.count("</section>"), path
+              assert len(re.findall(r"<section\b", html)) == html.count("</section>"), path
               assert canonical in urls, path
               assert html.count("2026-10-22") >= 2, path
               assert html.count('application/ld+json') >= 1, path
@@ -79,7 +79,7 @@ jobs:
               assert f'/blog/{slug}/' in blog, "New guide missing from blog hub"
           for folder in folders:
               html = (Path(folder) / "index.html").read_text(encoding="utf-8")
-              for anchor in re.findall(r'href="/projects/#(project-\\d{2})"', html):
+              for anchor in re.findall(r'href="/projects/#(project-\d{2})"', html):
                   assert f'id="{anchor}"' in portfolio, f"Broken portfolio anchor: {anchor}"
           print("PASS: 42 URLs, six service pages, 21 portfolio anchors, two guides and internal links")
           PY
