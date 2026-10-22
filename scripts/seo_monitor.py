@@ -26,11 +26,23 @@ ROOT.mkdir(exist_ok=True)
 def request(url, timeout=14, headers=None, limit=800000):
     headers = {"User-Agent": USER_AGENT, "Accept": "text/html,application/xml,application/json,*/*", **(headers or {})}
     req = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(req, timeout=timeout) as response:
-        data = response.read(limit + 1)
-        if len(data) > limit:
-            raise ValueError("Response exceeds configured read limit")
-        return response.status, response.geturl(), data
+    # Retry only transient failures of our own website. Third-party probes must
+    # respect their limits, and HTTP 404/403 are never retried.
+    attempts = 3 if urllib.parse.urlsplit(url).hostname == "dlvautomation.ru" else 1
+    for attempt in range(attempts):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as response:
+                data = response.read(limit + 1)
+                if len(data) > limit:
+                    raise ValueError("Response exceeds configured read limit")
+                return response.status, response.geturl(), data
+        except urllib.error.HTTPError as exc:
+            if exc.code not in (502, 503, 504) or attempt == attempts - 1:
+                raise
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
+            if attempt == attempts - 1:
+                raise
+        time.sleep(2 * (attempt + 1))
 
 
 class PageMeta(HTMLParser):
