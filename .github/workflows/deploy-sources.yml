@@ -40,6 +40,26 @@ jobs:
                   print("DNS A:", hostname, ips)
               except OSError as exc:
                   print("DNS A:", hostname, "unavailable", type(exc).__name__, str(exc)[:130])
+          # Compare public reachability by the two read-only monitor user agents.
+          import time
+          for ua in ("DLVAutomationDeployCheck/1.0",
+                     "DLVAutomationSiteMonitor/1.0 (+https://dlvautomation.ru/)"):
+              for resource in ("/robots.txt", "/sitemap.xml"):
+                  start = time.monotonic()
+                  try:
+                      req = urllib.request.Request(
+                          "https://dlvautomation.ru" + resource,
+                          headers={"User-Agent": ua,
+                                   "Accept": "text/html,application/xml,application/json,*/*"})
+                      with urllib.request.urlopen(req, timeout=10) as response:
+                          code = response.status
+                          size = len(response.read(120000))
+                      print("Probe", ua, resource, "HTTP", code, "bytes", size,
+                            "elapsed_s", round(time.monotonic() - start, 2))
+                  except Exception as exc:
+                      print("Probe", ua, resource, type(exc).__name__,
+                            str(exc)[:120], "elapsed_s",
+                            round(time.monotonic() - start, 2))
           sources = [
               ("Apex", "https://dlvautomation.ru"),
               ("Netlify alias", "https://moonlit-crostata-3b414a.netlify.app"),
