@@ -52,6 +52,29 @@ try{
     const label=uri==='/'?'home-ru':uri==='/en/'?'home-en':uri==='/uslugi/'?'services':'robotics';
     await page.screenshot({path:path.join('ux-screenshots',label+'-'+w+'.png'),fullPage:true});
    }
+
+   // Check functional mobile navigation, not just visual overflow.
+   if(w===375&&(uri==='/'||uri==='/en/')){
+    const toggle=page.locator('.menu-toggle');
+    const nav=page.locator('#main-nav');
+    const openLabel=uri==='/'?'Закрыть меню':'Close menu';
+    const closedLabel=uri==='/'?'Открыть меню':'Open menu';
+    if(await toggle.count()!==1||!await toggle.isVisible()){
+     errors.push(w+' '+uri+' mobile menu button missing');
+    }else{
+     if(await toggle.getAttribute('aria-expanded')!=='false')errors.push(w+' '+uri+' menu initially expanded');
+     await toggle.click();
+     if(await toggle.getAttribute('aria-expanded')!=='true'||!await nav.isVisible()||await toggle.getAttribute('aria-label')!==openLabel)
+      errors.push(w+' '+uri+' menu did not open accessibly');
+     await page.keyboard.press('Escape');
+     if(await toggle.getAttribute('aria-expanded')!=='false'||await nav.isVisible()||await toggle.getAttribute('aria-label')!==closedLabel)
+      errors.push(w+' '+uri+' Escape did not close menu accessibly');
+     await toggle.click();
+     await nav.locator('a[href="#services"]').click();
+     if(await toggle.getAttribute('aria-expanded')!=='false'||await nav.isVisible()||await toggle.getAttribute('aria-label')!==closedLabel)
+      errors.push(w+' '+uri+' service link did not close mobile menu');
+    }
+   }
    tested++;
   }
   await page.close();
