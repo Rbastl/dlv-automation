@@ -83,3 +83,13 @@ body.dlv-inner .dlv-site-footer .dlv-logo-label b{color:#fff}
  body.dlv-inner .cta .btn{width:100%;font-size:14px}
  body.dlv-inner .dlv-foot{grid-template-columns:1fr;gap:26px}
 }
+
+/* Compact service directory: direct navigation, no extra decorative cards. */
+body.dlv-inner .dlv-category-nav{width:min(1180px,calc(100% - 48px));margin:0 auto;display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:15px 0;border-bottom:1px solid #dce6ee}
+body.dlv-inner .dlv-category-nav a{display:inline-flex;padding:8px 12px;background:#edf5fc;border:1px solid #d7e6f3;color:#185684;font-size:13px;font-weight:600;text-decoration:none;border-radius:3px}
+body.dlv-inner .dlv-category-nav a:hover{background:#dceefe}
+body.dlv-inner .service-list a{padding:17px 19px;min-width:0}
+body.dlv-inner .service-list a strong{font-size:16px;line-height:1.32}
+body.dlv-inner .service-list a span{font-size:13px;line-height:1.55}
+body.dlv-inner .service-list a b{font-size:12px}
+@media(max-width:650px){body.dlv-inner .dlv-category-nav{width:calc(100% - 32px);gap:7px;padding:12px 0}body.dlv-inner .dlv-category-nav a{padding:7px 9px;font-size:12px}body.dlv-inner .service-list a{padding:14px 16px}body.dlv-inner .service-list a strong{font-size:15px}}
