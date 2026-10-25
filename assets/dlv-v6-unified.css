@@ -93,3 +93,6 @@ body.dlv-inner .service-list a strong{font-size:16px;line-height:1.32}
 body.dlv-inner .service-list a span{font-size:13px;line-height:1.55}
 body.dlv-inner .service-list a b{font-size:12px}
 @media(max-width:650px){body.dlv-inner .dlv-category-nav{width:calc(100% - 32px);gap:7px;padding:12px 0}body.dlv-inner .dlv-category-nav a{padding:7px 9px;font-size:12px}body.dlv-inner .service-list a{padding:14px 16px}body.dlv-inner .service-list a strong{font-size:15px}}
+
+/* Small screens: reveal every navigation item without horizontal clipping. */
+@media(max-width:650px){body.dlv-inner .dlv-nav{flex-wrap:wrap;overflow:visible;justify-content:flex-start;gap:8px 13px;padding:3px 0 5px}body.dlv-inner .dlv-nav a{font-size:12px}}
