@@ -96,3 +96,10 @@ body.dlv-inner .service-list a b{font-size:12px}
 
 /* Small screens: reveal every navigation item without horizontal clipping. */
 @media(max-width:650px){body.dlv-inner .dlv-nav{flex-wrap:wrap;overflow:visible;justify-content:flex-start;gap:8px 13px;padding:3px 0 5px}body.dlv-inner .dlv-nav a{font-size:12px}}
+
+/* Mobile nav: four visible sections without clipped labels or hidden horizontal scroll. */
+@media(max-width:650px){
+ body.dlv-inner .dlv-nav{gap:8px;justify-content:space-between;overflow:visible;white-space:nowrap;padding-bottom:6px}
+ body.dlv-inner .dlv-nav a{font-size:12px;flex:0 1 auto}
+ body.dlv-inner .dlv-nav a[href="/blog/"],body.dlv-inner .dlv-nav a[href="/en/"]{display:none}
+}
