@@ -1,0 +1,85 @@
+/* DLV V6: one shared presentation layer for inner pages. No third-party dependencies. */
+:root{--dlv-navy:#041320;--dlv-blue:#1684ff;--dlv-ink:#12283c;--dlv-muted:#60758a;--dlv-line:#dce6ee;--dlv-paper:#f4f7fa}
+html{scroll-padding-top:110px}
+body.dlv-inner{margin:0;font-family:Arial,"Segoe UI",sans-serif;color:var(--dlv-ink);background:#fff;line-height:1.6;-webkit-font-smoothing:antialiased}
+body.dlv-inner *{box-sizing:border-box}
+body.dlv-inner a,body.dlv-inner button{touch-action:manipulation}
+body.dlv-inner a:focus-visible,body.dlv-inner button:focus-visible{outline:3px solid #55aaff;outline-offset:3px}
+body.dlv-inner .dlv-site-header{height:auto;min-height:76px;background:var(--dlv-navy);color:#fff;position:sticky;top:0;z-index:100;border-bottom:1px solid #264057;box-shadow:none}
+body.dlv-inner .dlv-head{width:min(1180px,calc(100% - 48px));margin-inline:auto;min-height:76px;display:flex;align-items:center;gap:28px;min-width:0}
+body.dlv-inner .dlv-logo{display:inline-flex;align-items:center;gap:10px;flex-shrink:0;color:#fff;text-decoration:none;white-space:nowrap}
+body.dlv-inner .dlv-logo svg{width:39px;height:39px;color:#1684ff;flex:none}
+body.dlv-inner .dlv-logo-label{display:flex;flex-direction:column;line-height:1}
+body.dlv-inner .dlv-logo-label b{font-size:28px;font-weight:800;letter-spacing:-.045em}
+body.dlv-inner .dlv-logo-label small{font-size:8px;letter-spacing:.24em;margin-top:5px;font-weight:500}
+body.dlv-inner .dlv-nav{display:flex;align-items:center;justify-content:flex-end;gap:23px;flex:1;min-width:0;font-size:14px}
+body.dlv-inner .dlv-nav a{color:#dce7f2;text-decoration:none;white-space:nowrap;font-size:14px;font-weight:400}
+body.dlv-inner .dlv-nav a:hover{color:#7ac2ff}
+body.dlv-inner .dlv-header-contact{flex-shrink:0;background:#1479ee;color:#fff;text-decoration:none;padding:11px 16px;border-radius:3px;font-size:14px;font-weight:700;white-space:nowrap}
+body.dlv-inner .dlv-header-contact:hover{background:#005fc8}
+body.dlv-inner .wrap,body.dlv-inner .container{max-width:1180px}
+body.dlv-inner h1,body.dlv-inner h2,body.dlv-inner h3{overflow-wrap:break-word;hyphens:auto}
+body.dlv-inner .hero{padding-block:62px 56px;min-width:0}
+body.dlv-inner .hero h1{font-size:clamp(32px,4vw,56px);line-height:1.12;max-width:930px}
+body.dlv-inner .hero p{font-size:clamp(16px,1.6vw,18px);line-height:1.62;max-width:830px;margin-top:19px}
+body.dlv-inner .hero-tags{margin-top:22px}
+body.dlv-inner .hero-tags span{font-size:12px}
+body.dlv-inner .section{padding-block:54px}
+body.dlv-inner .section h2{font-size:clamp(28px,3vw,39px);line-height:1.2}
+body.dlv-inner .section-head{margin-bottom:24px;gap:20px;min-width:0}
+body.dlv-inner .section-head>*{min-width:0}
+body.dlv-inner .task-grid,body.dlv-inner .deliver-grid,body.dlv-inner .related-grid,body.dlv-inner .process-grid,body.dlv-inner .service-list{min-width:0}
+body.dlv-inner .task-grid>*,body.dlv-inner .process-grid>*,body.dlv-inner .related-grid>*,body.dlv-inner .deliver-grid>*{min-width:0;overflow-wrap:break-word}
+body.dlv-inner .task{padding:18px 20px;min-height:0;font-size:15px;line-height:1.58}
+body.dlv-inner .step{padding:19px 20px;min-height:0}
+body.dlv-inner .step h3{font-size:17px;margin-top:10px}
+body.dlv-inner .step p{font-size:14px;line-height:1.6}
+body.dlv-inner .process-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+body.dlv-inner .related-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.dlv-inner .related-grid a{min-width:0;overflow-wrap:anywhere}
+body.dlv-inner .deliver-item{padding:16px 18px;min-width:0;font-size:15px}
+body.dlv-inner .faq-item{padding:19px 21px}
+body.dlv-inner .faq-item h3{font-size:17px}
+body.dlv-inner .faq-item p{font-size:14px}
+body.dlv-inner .callout{font-size:14px;line-height:1.65;padding:17px 19px}
+body.dlv-inner .cta{padding-block:54px}
+body.dlv-inner .cta h2{font-size:clamp(30px,3.5vw,44px)}
+body.dlv-inner .cta p{font-size:16px}
+body.dlv-inner .btn{display:inline-flex;align-items:center;justify-content:center;white-space:normal;text-align:center;line-height:1.4;min-height:46px}
+body.dlv-inner .dlv-site-footer{display:block;position:static;background:#020e18;color:#aec0d2;padding:34px 0 24px}
+body.dlv-inner .dlv-foot{width:min(1180px,calc(100% - 48px));margin:auto;display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:38px}
+body.dlv-inner .dlv-site-footer h3{margin:0 0 14px;color:#fff;font-size:15px;font-weight:600}
+body.dlv-inner .dlv-foot-column{display:flex;flex-direction:column;gap:9px;min-width:0}
+body.dlv-inner .dlv-foot-column p{font-size:14px;line-height:1.5;max-width:300px;margin:13px 0 0;color:#9fb4c5}
+body.dlv-inner .dlv-site-footer a{font-size:14px;line-height:1.5;color:#c5d5e4;text-decoration:none;overflow-wrap:anywhere}
+body.dlv-inner .dlv-site-footer a:hover{color:#62b6ff}
+body.dlv-inner .dlv-foot-end{width:min(1180px,calc(100% - 48px));margin:25px auto 0;border-top:1px solid #284055;padding-top:18px;font-size:12px;color:#8198ab}
+body.dlv-inner .dlv-site-footer .dlv-logo{align-self:flex-start}
+body.dlv-inner .dlv-site-footer .dlv-logo-label b{color:#fff}
+@media(max-width:950px){
+ html{scroll-padding-top:132px}
+ body.dlv-inner .dlv-head{padding-block:13px;min-height:0;flex-wrap:wrap;gap:13px 20px}
+ body.dlv-inner .dlv-nav{width:100%;flex:0 0 100%;order:3;justify-content:flex-start;overflow-x:auto;gap:19px;padding:4px 0 7px;scrollbar-width:thin}
+ body.dlv-inner .dlv-header-contact{margin-left:auto}
+ body.dlv-inner .process-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.dlv-inner .section-head{grid-template-columns:1fr;gap:8px}
+}
+@media(max-width:650px){
+ html{scroll-padding-top:140px}
+ body.dlv-inner .dlv-head,body.dlv-inner .dlv-foot,body.dlv-inner .dlv-foot-end{width:calc(100% - 32px)}
+ body.dlv-inner .dlv-logo svg{width:30px;height:30px}
+ body.dlv-inner .dlv-logo-label b{font-size:24px}
+ body.dlv-inner .dlv-logo-label small{font-size:7px}
+ body.dlv-inner .dlv-header-contact{padding:9px 11px;font-size:12px}
+ body.dlv-inner .dlv-nav{gap:17px}
+ body.dlv-inner .dlv-nav a{font-size:13px}
+ body.dlv-inner .hero{padding-block:42px 38px}
+ body.dlv-inner .hero h1{font-size:clamp(30px,8vw,42px)}
+ body.dlv-inner .hero p{font-size:16px;line-height:1.55}
+ body.dlv-inner .section{padding-block:38px}
+ body.dlv-inner .task-grid,body.dlv-inner .related-grid,body.dlv-inner .deliver-grid,body.dlv-inner .process-grid{grid-template-columns:1fr}
+ body.dlv-inner .task,body.dlv-inner .step{padding:17px 18px}
+ body.dlv-inner .cta{padding-block:39px}
+ body.dlv-inner .cta .btn{width:100%;font-size:14px}
+ body.dlv-inner .dlv-foot{grid-template-columns:1fr;gap:26px}
+}
