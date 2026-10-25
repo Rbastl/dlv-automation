@@ -1,0 +1,50 @@
+name: DLV V6 complete UX and responsive QA
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "en/index.html"
+      - "**/index.html"
+      - "assets/dlv-v6-unified.css"
+      - "scripts/v6_site_audit.py"
+      - "scripts/v6_visual_test.mjs"
+      - ".github/workflows/v6-complete-ux-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  usability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate website package, all static links and public text
+        run: |
+          python3 -m py_compile scripts/v6_site_audit.py
+          python3 scripts/build_timeweb_site.py
+          python3 scripts/v6_site_audit.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install headless browser for viewport testing
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Check all pages at mobile/desktop widths
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory site-dist >/tmp/dlv-v6-server.log 2>&1 &
+          sleep 2
+          node scripts/v6_visual_test.mjs
+      - name: Archive visual evidence for manual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dlv-v6-screenshots
+          path: ux-screenshots/
+          if-no-files-found: ignore
+          retention-days: 7
