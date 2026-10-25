@@ -24,7 +24,7 @@ jobs:
         run: |
           python3 -m py_compile scripts/google_index_audit.py scripts/seo_monitor.py scripts/seo_search_analytics.py
           python3 scripts/build_timeweb_site.py
-      - name: Validate 45 URL sitemap, PLC guides, register calculator and portfolio
+      - name: Validate 48 URL sitemap, V6 service additions, marking and AI pages
         shell: bash
         run: |
           python3 - <<'PY'
@@ -41,7 +41,7 @@ jobs:
           root = ET.parse("sitemap.xml")
           entries = root.findall(".//s:url", ns)
           urls = [e.findtext("s:loc", namespaces=ns) for e in entries]
-          assert len(urls) == 45 and len(urls) == len(set(urls)), "Sitemap must contain exactly 45 unique URLs"
+          assert len(urls) == 48 and len(urls) == len(set(urls)), "Sitemap must contain exactly 48 unique URLs"
           assert "https://dlvautomation.ru/uslugi/" in urls, "Service catalog missing"
           for folder in folders:
               path = Path(folder) / "index.html"
@@ -96,5 +96,38 @@ jobs:
           assert 'id="mb-convert"' in calculator and 'id="mb-output"' in calculator, "Calculator controls missing"
           assert 'Number.isInteger(n)' in calculator and 'n-base' in calculator, "Calculator validation or math missing"
           assert 'addEventListener("click",update)' in calculator, "Calculator button not wired"
-          print("PASS: 45 URLs, portfolio links, industrial SEO guides, calculator and internal links")
+          # Home V6 additions: four working links, no extra H1 or broken destinations.
+          home = Path("index.html").read_text(encoding="utf-8")
+          catalog = Path("uslugi/index.html").read_text(encoding="utf-8")
+          target_pages = (
+              "robotizaciya-proizvodstva",
+              "mashinnoe-zrenie-na-proizvodstve",
+              "ii-na-proizvodstve",
+          )
+          assert len(re.findall(r"<h1\b", home)) == 1, "Homepage H1 changed"
+          assert '<div class="services-grid">' in home, "V6 grid missing"
+          assert home.count('class="service service-digital service-ai"') == 1, "AI card missing"
+          for slug in target_pages:
+              page = Path(slug) / "index.html"
+              html = page.read_text(encoding="utf-8")
+              canonical = f"https://dlvautomation.ru/{slug}/"
+              assert canonical in urls and f'rel="canonical" href="{canonical}"' in html, page
+              assert len(re.findall(r"<h1\b", html)) == 1, page
+              assert len(re.findall(r"<section\b", html)) == html.count("</section>"), page
+              assert len(re.findall(r"<div\b", html)) == html.count("</div>"), page
+              assert html.count('application/ld+json') >= 1, page
+              assert f'href="/{slug}/"' in home and f'href="/{slug}/"' in catalog, page
+              assert "2026-10-25" == next(e.findtext("s:lastmod", namespaces=ns)
+                         for e in entries if e.findtext("s:loc", namespaces=ns) == canonical), slug
+              for link in re.findall(r'href="(/[^"#?]+/)"', html):
+                  target = Path(link.lstrip("/")) / "index.html" if link != "/" else Path("index.html")
+                  assert target.exists(), f"{page}: broken internal link {link}"
+          marking = "integraciya-markirovki-proizvodstvennoy-linii"
+          mark_html = (Path(marking) / "index.html").read_text(encoding="utf-8")
+          assert "Честный ЗНАК" in mark_html and "Data Matrix" in mark_html
+          assert f'href="/{marking}/"' in home and f'href="/{marking}/"' in catalog
+          assert "2026-10-25" == next(e.findtext("s:lastmod", namespaces=ns)
+                      for e in entries if e.findtext("s:loc", namespaces=ns) ==
+                      f"https://dlvautomation.ru/{marking}/")
+          print("PASS: 48 URLs, V6 service cards, 3 scoped pages, marking, portfolio and calculator")
           PY
