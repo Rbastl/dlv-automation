@@ -106,7 +106,9 @@ jobs:
           )
           assert len(re.findall(r"<h1\b", home)) == 1, "Homepage H1 changed"
           assert '<div class="services-grid">' in home, "V6 grid missing"
-          assert home.count('class="service service-digital service-ai"') == 1, "AI card missing"
+          assert home.count('class="service" href=') == 6, "Homepage must have 6 compact service cards"
+          assert 'href="/ii-na-proizvodstve/"' in home, "AI service missing"
+          assert 'id="notes-dialog"' not in home and 'id="contact-form"' not in home, "Draft UI or old form remains"
           for slug in target_pages:
               page = Path(slug) / "index.html"
               html = page.read_text(encoding="utf-8")
