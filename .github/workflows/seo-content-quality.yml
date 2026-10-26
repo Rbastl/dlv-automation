@@ -74,8 +74,8 @@ jobs:
               html = path.read_text(encoding="utf-8")
               canonical = f"https://dlvautomation.ru/{folder}/"
               assert html.count("<!-- DLV-SEO-COMMERCIAL-SCOPE-20261026 -->") == 1, path
-              assert len(re.findall(r"<h1\\b", html)) == 1, path
-              assert len(re.findall(r"<section\\b", html)) == html.count("</section>"), path
+              assert len(re.findall(r"<h1\b", html)) == 1, path
+              assert len(re.findall(r"<section\b", html)) == html.count("</section>"), path
               assert html.count("<div ") == html.count("</div>"), path
               assert 'mailto:thedlv.pro@gmail.com?subject=' in html, path
               element = next((e for e in entries
