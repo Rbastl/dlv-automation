@@ -92,6 +92,14 @@ jobs:
           assert "addEventListener" in tool_page and "replaceChildren()" in tool_page
           assert '/blog/4-20ma-plk-kalkulyator/' in Path("blog/index.html").read_text(encoding="utf-8")
           assert '/blog/4-20ma-plk-kalkulyator/' in Path("blog/fat-io-testy-pnr-asu-tp/index.html").read_text(encoding="utf-8")
+          feed = ET.parse("feed.xml").getroot()
+          assert feed.tag == "rss" and feed.get("version") == "2.0"
+          rss_items = feed.findall("./channel/item")
+          assert len(rss_items) == 11, "Expected 11 original RSS article summaries"
+          rss_links = [node.findtext("link") for node in rss_items]
+          assert len(set(rss_links)) == len(rss_links) and set(rss_links).issubset(set(urls))
+          assert 'href="/feed.xml"' in Path("index.html").read_text(encoding="utf-8")
+          assert 'href="/feed.xml"' in Path("blog/index.html").read_text(encoding="utf-8")
           portfolio = Path("projects/index.html").read_text(encoding="utf-8")
           assert len(re.findall(r'id="project-\d{2}"', portfolio)) == 21, "Expected 21 stable case anchors"
           assert portfolio.count("project-service-link") >= 13, "Projects need links back to services"

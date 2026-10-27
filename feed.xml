@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>DLV Automation — инженерные материалы по ПЛК, SCADA и АСУ ТП</title>
+    <link>https://dlvautomation.ru/blog/</link>
+    <description>Практические инструкции, бесплатные калькуляторы, диагностика промышленной связи и проверка ПО АСУ ТП.</description>
+    <language>ru-RU</language>
+    <atom:link href="https://dlvautomation.ru/feed.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>4–20 мА и 0–10 В: калькулятор датчика, ПЛК и шкалы измерения</title>
+      <link>https://dlvautomation.ru/blog/4-20ma-plk-kalkulyator/</link>
+      <guid isPermaLink="true">https://dlvautomation.ru/blog/4-20ma-plk-kalkulyator/</guid>
+      <description>Калькулятор 4–20 мА и 0–10 В: перевод тока/напряжения в давление, уровень и температуру, пересчёт raw АЦП ПЛК, пять контрольных точек и CSV-протокол.</description>
+      <pubDate>Tue, 27 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>FAT, I/O-тесты и SAT в АСУ ТП: порядок проверки PLC и SCADA</title>
+      <link>https://dlvautomation.ru/blog/fat-io-testy-pnr-asu-tp/</link>
+      <guid isPermaLink="true">https://dlvautomation.ru/blog/fat-io-testy-pnr-asu-tp/</guid>
+      <description>Как подготовить FAT, I/O-тесты, сухие испытания и SAT: версии PLC/SCADA, карта сигналов, протокол замечаний, критерии приёмки и запуск на процессе.</description>
+      <pubDate>Thu, 22 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Modbus RTU/TCP: регистры 40001, адреса, функции 03/04 и калькулятор</title>
+      <link>https://dlvautomation.ru/blog/modbus-registry-kalkulyator/</link>
+      <guid isPermaLink="true">https://dlvautomation.ru/blog/modbus-registry-kalkulyator/</guid>
+      <description>Modbus RTU и TCP для ПЛК: Holding и Input Register, функции 03/04, адрес 40001 и нулевой offset. Бесплатный калькулятор адреса регистра без передачи данных.</description>
+      <pubDate>Thu, 22 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>RS-485 и Modbus RTU: что это, как устроена сеть и почему ПЛК теряет связь</title>
+      <link>https://dlvautomation.ru/blog/modbus-rtu-rs485-diagnostika/</link>
+      <guid isPermaLink="true">https://dlvautomation.ru/blog/modbus-rtu-rs485-diagnostika/</guid>
+      <description>RS-485 и Modbus RTU для инженера АСУ ТП: отличие интерфейса от протокола, параметры порта, тайм-ауты, RS-485 шина и чек-лист диагностики связи с ПЛК.</description>
+      <pubDate>Thu, 22 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Сигналы обмена между ПЛК и машинами: Ready, Run, Fault, Heartbeat</title>
+      <link>https://dlvautomation.ru/blog/signaly-obmena-mezhdu-plk/</link>
+      <guid isPermaLink="true">https://dlvautomation.ru/blog/signaly-obmena-mezhdu-plk/</guid>
+      <description>Как согласовать интерфейс между двумя ПЛК и машинами: Ready, Request, Running, Fault, Heartbeat, тайм-ауты, ошибки связи, тесты и правила перезапуска.</description>
+      <pubDate>Thu, 22 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Сухой контакт: что это такое и как его использует дискретный вход ПЛК</title>
+      <link>https://dlvautomation.ru/blog/sukhoj-kontakt-v-plk/</link>
+      <guid isPermaLink="true">https://dlvautomation.ru/blog/sukhoj-kontakt-v-plk/</guid>
+      <description>Что такое сухой контакт в электрике и АСУ ТП: NO/NC, релейный выход, дискретный вход 24 В, отличия от PNP/NPN, диагностика PLC и типовые ошибки.</description>
+      <pubDate>Thu, 22 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Доработка программы ПЛК на действующем оборудовании: с чего начать</title>
+      <link>https://dlvautomation.ru/blog/dorabotka-programmy-plk/</link>
+      <guid isPermaLink="true">https://dlvautomation.ru/blog/dorabotka-programmy-plk/</guid>
+      <description>Практический чек-лист перед доработкой действующей программы ПЛК: резервная копия, версия проекта, I/O, сети, алгоритмы, тестирование и план отката.</description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Интеграция АСУ ТП с MES, ERP и 1С: что передавать и через какой интерфейс</title>
+      <link>https://dlvautomation.ru/blog/integraciya-asu-tp-mes-erp-1c/</link>
+      <guid isPermaLink="true">https://dlvautomation.ru/blog/integraciya-asu-tp-mes-erp-1c/</guid>
+      <description>Практическая схема интеграции ПЛК и SCADA с MES, ERP и 1С: карта данных, OPC UA, SQL, REST API, задания, рецептуры, выпуск, ошибки и восстановление обмена.</description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Какие исходные данные нужны для программирования ПЛК и оценки проекта АСУ ТП</title>
+      <link>https://dlvautomation.ru/blog/ishodnye-dannye-dlya-programmirovaniya-plk/</link>
+      <guid isPermaLink="true">https://dlvautomation.ru/blog/ishodnye-dannye-dlya-programmirovaniya-plk/</guid>
+      <description>Что подготовить для оценки и разработки программы ПЛК: модели оборудования, схемы, I/O-лист, технологическое описание, исходники, сети, интерфейсы и критерии проверки.</description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Миграция Siemens S7-300 / S7-400 на S7-1500: что проверить до перехода</title>
+      <link>https://dlvautomation.ru/blog/migraciya-s7-300-s7-1500/</link>
+      <guid isPermaLink="true">https://dlvautomation.ru/blog/migraciya-s7-300-s7-1500/</guid>
+      <description>Чек-лист миграции Siemens S7-300 и S7-400 на S7-1500: исходники, аппаратная конфигурация, сети, HMI, блоки, адресация, тестирование и ввод.</description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>WinCC, InTouch или FactoryTalk View: как выбирать SCADA под существующую АСУ ТП</title>
+      <link>https://dlvautomation.ru/blog/vybor-scada-wincc-intouch-factorytalk/</link>
+      <guid isPermaLink="true">https://dlvautomation.ru/blog/vybor-scada-wincc-intouch-factorytalk/</guid>
+      <description>Как выбирать SCADA/HMI между Siemens WinCC, AVEVA InTouch и Rockwell FactoryTalk View: установленная база, драйверы, архитектура, архивы, поддержка и интеграция.</description>
+      <pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>
