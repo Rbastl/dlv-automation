@@ -100,6 +100,7 @@ rsync -rlt --prune-empty-dirs \
   --exclude='/.github/' \
   --exclude='/scripts/' \
   --exclude='/seo/' \
+  --exclude='/examples/' \
   --exclude='/.nojekyll' \
   --include='*/' \
   --include='*.html' \
