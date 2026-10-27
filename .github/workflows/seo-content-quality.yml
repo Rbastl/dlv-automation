@@ -104,7 +104,11 @@ jobs:
               assert html.count("<div ") == html.count("</div>"), path
               assert len(re.findall(r"<section\b", html)) == html.count("</section>"), path
               assert canonical in urls, path
-              assert html.count("2026-10-22") >= 2, path
+              assert '"datePublished":"2026-10-22"' in html, path
+              assert re.search(r'"dateModified":"2026-10-(?:2[2-9]|3[01])"', html), path
+              if slug == "fat-io-testy-pnr-asu-tp":
+                  assert 'id="fat-template-download"' in html, path
+                  assert "DLV_FAT_IO_test_protocol_template.csv" in html, path
               assert html.count('application/ld+json') >= 1, path
           blog = Path("blog/index.html").read_text(encoding="utf-8")
           for slug in ("fat-io-testy-pnr-asu-tp", "signaly-obmena-mezhdu-plk"):

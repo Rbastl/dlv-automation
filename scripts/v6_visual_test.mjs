@@ -99,6 +99,23 @@ try{
     if(!download.suggestedFilename().endsWith('.csv'))errors.push('analogue scale: CSV download failed');
     if(pageErrors.length>calcErrors)errors.push('analogue scale interaction JS: '+pageErrors.slice(calcErrors).join('; ').slice(0,240));
    }
+   // A useful free resource must actually download an editable UTF-8 CSV.
+   if(w===375&&uri==='/blog/fat-io-testy-pnr-asu-tp/'){
+    const beforeCsvErrors=pageErrors.length;
+    const trigger=page.locator('#fat-template-download');
+    if(await trigger.count()!==1)errors.push('FAT CSV: download button missing');
+    else{
+     const [download]=await Promise.all([page.waitForEvent('download',{timeout:12000}),trigger.click()]);
+     if(download.suggestedFilename()!=='DLV_FAT_IO_test_protocol_template.csv')errors.push('FAT CSV: unexpected filename');
+     const csv=fs.readFileSync(await download.path(),'utf8');
+     const lines=csv.trim().split(/\r?\n/);
+     if(!csv.startsWith('\uFEFF')||lines.length!==21||!lines[0].includes('Адрес ПЛК')||!csv.includes('ПРИМЕР-03')||!csv.includes('TEST-15'))
+      errors.push('FAT CSV: expected header, five examples and fifteen blank test rows');
+     if(!(await page.locator('#fat-template-hint').textContent())?.includes('Готово'))
+      errors.push('FAT CSV: success message missing');
+    }
+    if(pageErrors.length>beforeCsvErrors)errors.push('FAT CSV JS: '+pageErrors.slice(beforeCsvErrors).join('; ').slice(0,240));
+   }
    tested++;
   }
   await page.close();
