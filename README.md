@@ -12,6 +12,10 @@ Repository for managing, updating and publishing the DLV Automation website.
 
 GitHub `main` is the source of truth; the production domain is hosted at [dlvautomation.ru](https://dlvautomation.ru/). Timeweb pulls the public static site from GitHub via HTTPS/Cron using [this synchronization script](scripts/timeweb_sync_from_github.sh). Monitor the deployed revision separately from the GitHub CI result. Do not publish internal scripts or credentials.
 
+## IEC 61131-3 code references
+
+- [Vendor-neutral analogue input scaling in Structured Text](examples/iec61131-3-linear-scale/README.md) — raw endpoints, engineering units, quality flags, and eight independent test cases. Educational example, not a certified PLC library.
+
 ## Free engineering resources
 
 The website publishes a [free RSS 2.0 feed](https://dlvautomation.ru/feed.xml) of its own engineering articles for feed-reader subscriptions and voluntary syndication. The feed contains summaries and canonical article links, not duplicate full-text articles.
