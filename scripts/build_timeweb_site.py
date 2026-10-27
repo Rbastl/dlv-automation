@@ -18,7 +18,7 @@ STATIC_EXTENSIONS = {
     ".woff", ".woff2", ".ttf", ".otf", ".avif", ".mp4", ".pdf",
 }
 EXCLUDED_DIRS = {
-    ".git", ".github", "scripts", "seo", "site-dist", "__pycache__",
+    ".git", ".github", "scripts", "seo", "examples", "site-dist", "__pycache__",
     "node_modules", ".venv", "vendor", "tests", "test",
 }
 PUBLIC_ROOT_FILES = {
