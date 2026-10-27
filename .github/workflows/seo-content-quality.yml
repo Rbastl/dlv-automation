@@ -24,7 +24,7 @@ jobs:
         run: |
           python3 -m py_compile scripts/google_index_audit.py scripts/seo_monitor.py scripts/seo_search_analytics.py
           python3 scripts/build_timeweb_site.py
-      - name: Validate 48 URL sitemap, V6 service additions, marking and AI pages
+      - name: Validate 49 URL sitemap, V6 service additions, marking and AI pages
         shell: bash
         run: |
           python3 - <<'PY'
@@ -41,7 +41,7 @@ jobs:
           root = ET.parse("sitemap.xml")
           entries = root.findall(".//s:url", ns)
           urls = [e.findtext("s:loc", namespaces=ns) for e in entries]
-          assert len(urls) == 48 and len(urls) == len(set(urls)), "Sitemap must contain exactly 48 unique URLs"
+          assert len(urls) == 49 and len(urls) == len(set(urls)), "Sitemap must contain exactly 49 unique URLs"
           assert "https://dlvautomation.ru/uslugi/" in urls, "Service catalog missing"
           for folder in folders:
               path = Path(folder) / "index.html"
@@ -82,6 +82,16 @@ jobs:
                               if e.findtext("s:loc", namespaces=ns) == canonical), None)
               assert element is not None, folder
               assert element.findtext("s:lastmod", namespaces=ns) >= "2026-10-26", folder
+          # Verify the unique analogue signal scaling resource is published and discoverable.
+          tool_page = Path("blog/4-20ma-plk-kalkulyator/index.html").read_text(encoding="utf-8")
+          assert "https://dlvautomation.ru/blog/4-20ma-plk-kalkulyator/" in urls
+          assert tool_page.count("<h1>") == 1
+          assert 'rel="canonical" href="https://dlvautomation.ru/blog/4-20ma-plk-kalkulyator/"' in tool_page
+          for node_id in ("scale-form", "scale-value", "scale-expected", "scale-checkpoints", "scale-export"):
+              assert 'id="' + node_id + '"' in tool_page, node_id
+          assert "addEventListener" in tool_page and "replaceChildren()" in tool_page
+          assert '/blog/4-20ma-plk-kalkulyator/' in Path("blog/index.html").read_text(encoding="utf-8")
+          assert '/blog/4-20ma-plk-kalkulyator/' in Path("blog/fat-io-testy-pnr-asu-tp/index.html").read_text(encoding="utf-8")
           portfolio = Path("projects/index.html").read_text(encoding="utf-8")
           assert len(re.findall(r'id="project-\d{2}"', portfolio)) == 21, "Expected 21 stable case anchors"
           assert portfolio.count("project-service-link") >= 13, "Projects need links back to services"
@@ -153,5 +163,5 @@ jobs:
           assert "2026-10-25" == next(e.findtext("s:lastmod", namespaces=ns)
                       for e in entries if e.findtext("s:loc", namespaces=ns) ==
                       f"https://dlvautomation.ru/{marking}/")
-          print("PASS: 48 URLs, V6 service cards, 3 scoped pages, marking, portfolio and calculator")
+          print("PASS: 49 URLs, V6 service cards, 3 scoped pages, marking, portfolio and calculator")
           PY
