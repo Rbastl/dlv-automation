@@ -48,8 +48,8 @@ try{
    if(res.collisions.length)errors.push(w+' '+uri+' cards overlap '+JSON.stringify(res.collisions));
    if(res.h1!==1)errors.push(w+' '+uri+' H1 count '+res.h1);
    if(uri==='/'&&res.cards!==6)errors.push(w+' '+uri+' expected 6 cards, got '+res.cards);
-   if(['/','/en/','/uslugi/','/robotizaciya-proizvodstva/'].includes(uri)&&[375,1440].includes(w)){
-    const label=uri==='/'?'home-ru':uri==='/en/'?'home-en':uri==='/uslugi/'?'services':'robotics';
+   if(['/','/en/','/uslugi/','/robotizaciya-proizvodstva/','/blog/4-20ma-plk-kalkulyator/'].includes(uri)&&[375,1440].includes(w)){
+    const label=uri==='/'?'home-ru':uri==='/en/'?'home-en':uri==='/uslugi/'?'services':uri==='/blog/4-20ma-plk-kalkulyator/'?'analogue-calc':'robotics';
     await page.screenshot({path:path.join('ux-screenshots',label+'-'+w+'.png'),fullPage:true});
    }
 
@@ -74,6 +74,30 @@ try{
      if(await toggle.getAttribute('aria-expanded')!=='false'||await nav.isVisible()||await toggle.getAttribute('aria-label')!==closedLabel)
       errors.push(w+' '+uri+' service link did not close mobile menu');
     }
+   }
+   // Verify the new analogue PLC calculator works, not just that it looks correct.
+   if(w===375&&uri==='/blog/4-20ma-plk-kalkulyator/'){
+    const calcErrors=pageErrors.length;
+    const value=page.locator('#scale-value');
+    if((await value.textContent())?.trim()!=='5 бар') errors.push('analogue scale: 12mA 0..10bar must be 5bar');
+    await page.locator('#signal-reading').fill('20');
+    await page.locator('#scale-calculate').click();
+    if((await value.textContent())?.trim()!=='10 бар') errors.push('analogue scale: 20mA 0..10bar must be 10bar');
+    await page.locator('#signal-kind').selectOption('v');
+    if((await value.textContent())?.trim()!=='5 бар') errors.push('analogue scale: 5V 0..10bar must be 5bar');
+    await page.locator('#raw-low').fill('100');
+    await page.locator('#raw-high').fill('200');
+    await page.locator('#raw-measured').fill('150');
+    await page.locator('#scale-calculate').click();
+    if(!(await page.locator('#scale-raw-result').textContent())?.includes('5 бар')) errors.push('analogue scale: raw 150 of 100..200 must be 5bar');
+    await page.locator('#raw-high').fill('100');
+    await page.locator('#scale-calculate').click();
+    if(!(await page.locator('#scale-error').textContent())?.includes('оба разных кода')) errors.push('analogue scale: equal raw endpoints must be rejected');
+    await page.locator('#raw-high').fill('200');
+    await page.locator('#scale-calculate').click();
+    const [download]=await Promise.all([page.waitForEvent('download',{timeout:12000}),page.locator('#scale-export').click()]);
+    if(!download.suggestedFilename().endsWith('.csv'))errors.push('analogue scale: CSV download failed');
+    if(pageErrors.length>calcErrors)errors.push('analogue scale interaction JS: '+pageErrors.slice(calcErrors).join('; ').slice(0,240));
    }
    tested++;
   }
