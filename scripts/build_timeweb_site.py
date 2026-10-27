@@ -22,7 +22,7 @@ EXCLUDED_DIRS = {
     "node_modules", ".venv", "vendor", "tests", "test",
 }
 PUBLIC_ROOT_FILES = {
-    "index.html", "404.html", "robots.txt", "sitemap.xml", "favicon.svg",
+    "index.html", "404.html", "robots.txt", "sitemap.xml", "feed.xml", "favicon.svg",
     "yandex_abd6fd29640c5931.html",
 }
 
@@ -73,6 +73,8 @@ def main():
             missing.append(path)
     if missing:
         sys.exit("ERROR: Missing pages: " + ", ".join(missing[:20]))
+    if not (DEST / "feed.xml").is_file():
+        sys.exit("ERROR: RSS feed missing from public website package.")
     if not (DEST / "index.html").exists() or not (DEST / "robots.txt").exists():
         sys.exit("ERROR: Required entry files missing.")
     print(f"Timeweb publishing package prepared: {count} public files, {len(urls)} sitemap URLs.")
