@@ -150,6 +150,27 @@ def audit_site():
         errors.append("sitemap.xml: " + str(exc))
         urls = []
 
+
+    # Comparing only sitemap URLs is insufficient: Timeweb can serve yesterday's
+    # 48 URLs after GitHub main changes page text, links or sitemap lastmod.
+    # The Timeweb Cron script writes this file from its actual checked-out SHA.
+    expected_revision = os.getenv("GITHUB_SHA", "").strip()
+    deployed_revision = ""
+    try:
+        status, _, body = request(HOME + "/dlv-deploy-revision.txt", timeout=12)
+        if status != 200:
+            raise ValueError("HTTP " + str(status))
+        deployed_revision = body.decode("utf-8", errors="replace").strip()
+        if not re.fullmatch(r"[0-9a-f]{40}", deployed_revision):
+            errors.append("Timeweb deployment revision is missing or invalid; verify Cron and deployed files.")
+        elif expected_revision and deployed_revision != expected_revision:
+            errors.append("Timeweb deployment not synchronized with GitHub main: "
+                          f"published={deployed_revision[:12]}, "
+                          f"expected={expected_revision[:12]}. Check Timeweb Cron; "
+                          "website may still show old content.")
+    except Exception as exc:
+        errors.append("Timeweb deployment revision: " + str(exc))
+
     for url in urls:
         if not url.startswith(HOME + "/"):
             errors.append("Foreign host in sitemap: " + url[:160])
@@ -188,6 +209,8 @@ def audit_site():
         "checked_at_utc": datetime.now(timezone.utc).isoformat(),
         "source": HOME,
         "sitemap_pages": len(urls),
+        "expected_deployment_revision": expected_revision,
+        "published_deployment_revision": deployed_revision,
         "checked": len(pages),
         "ok": sum(bool(row.get("ok")) for row in pages),
         "errors": errors,
@@ -198,6 +221,7 @@ def audit_site():
     text = ("## DLV Automation · проверка сайта\n\n"
             f"Страниц: **{len(pages)}**, проверены без ошибок: **{report['ok']}**. "
             f"Ошибок: **{len(errors)}**; предупреждений: **{len(warnings)}**.\n\n"
+            + (f"Timeweb SHA: {deployed_revision[:12] or 'unknown'}; GitHub SHA: {expected_revision[:12] or 'not supplied'}.\n\n")
             + ("\n".join("- ❌ " + msg[:220] for msg in errors[:15]) if errors else "✅ Критичных ошибок не обнаружено.")
             + ("\n\n" + "\n".join("- ⚠️ " + msg[:220] for msg in warnings[:10]) if warnings else ""))
     step_summary(text)
