@@ -87,6 +87,20 @@ def main():
     for uri in urls:
         path = local_path(urlsplit(uri).path.replace("https://dlvautomation.ru",""))
         if not path or not (ROOT/path).is_file(): raise AssertionError(f"Missing sitemap page: {uri}")
+    feed = ET.parse("feed.xml")
+    fr = feed.getroot()
+    if fr.tag != "rss" or fr.attrib.get("version") != "2.0":
+        raise AssertionError("RSS feed must be valid RSS 2.0")
+    feed_items = fr.findall("./channel/item")
+    if len(feed_items) != 11:
+        raise AssertionError(f"RSS feed expected 11 original articles, got {len(feed_items)}")
+    feed_links = [item.findtext("link") for item in feed_items]
+    if len(set(feed_links)) != len(feed_links) or not set(feed_links).issubset(set(urls)):
+        raise AssertionError("RSS feed contains duplicate or non-sitemap links")
+    if not all(item.findtext("title") and item.findtext("pubDate") for item in feed_items):
+        raise AssertionError("RSS items missing titles or publication dates")
+    if 'href="/feed.xml"' not in data["index.html"][1] or 'href="/feed.xml"' not in data["blog/index.html"][1]:
+        raise AssertionError("RSS discovery missing on home or blog")
     ru = data["index.html"][1]
     en = data["en/index.html"][1]
     for file, home in (("index.html",ru),("en/index.html",en)):
