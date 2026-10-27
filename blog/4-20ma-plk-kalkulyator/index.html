@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>4–20 мА и 0–10 В: калькулятор датчика, ПЛК и шкалы измерения — DLV Automation</title>
+<meta name="description" content="Калькулятор 4–20 мА и 0–10 В: перевод тока/напряжения в давление, уровень и температуру, пересчёт raw АЦП ПЛК, пять контрольных точек и CSV-протокол.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://dlvautomation.ru/blog/4-20ma-plk-kalkulyator/"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article"><meta property="og:site_name" content="DLV Automation">
+<meta property="og:title" content="4–20 мА и 0–10 В: калькулятор датчика, ПЛК и шкалы измерения">
+<meta property="og:description" content="Калькулятор 4–20 мА и 0–10 В: перевод тока/напряжения в давление, уровень и температуру, пересчёт raw АЦП ПЛК, пять контрольных точек и CSV-протокол.">
+<meta property="og:url" content="https://dlvautomation.ru/blog/4-20ma-plk-kalkulyator/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"4–20 мА и 0–10 В: калькулятор датчика, ПЛК и шкалы измерения","description":"Калькулятор 4–20 мА и 0–10 В: перевод тока/напряжения в давление, уровень и температуру, пересчёт raw АЦП ПЛК, пять контрольных точек и CSV-протокол.","datePublished":"2026-10-27","dateModified":"2026-10-27","author":{"@type":"Organization","name":"DLV Automation"},"publisher":{"@type":"Organization","name":"DLV Automation","url":"https://dlvautomation.ru/"},"mainEntityOfPage":"https://dlvautomation.ru/blog/4-20ma-plk-kalkulyator/"}</script>
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body.dlv-inner{color:#12283c}
+body.dlv-inner .tool-wrap{width:min(1020px,calc(100% - 48px));margin-inline:auto}
+.tool-hero{background:linear-gradient(120deg,#041320,#0a2c48);color:#fff;padding:64px 0 62px}
+.tool-crumb{font-size:13px;color:#afc9df;margin-bottom:20px}
+.tool-crumb a{color:#a9c7e6;text-decoration:underline;text-underline-offset:3px}
+.tool-hero h1{font-size:clamp(31px,4.5vw,53px);line-height:1.14;letter-spacing:-.038em;max-width:950px;margin:0 0 22px}
+.tool-hero p{max-width:880px;color:#c3d4e1;font-size:17px;line-height:1.65;margin:0}
+.tool-main{padding:46px 0 66px}
+.tool-main h2{font-size:clamp(25px,2.8vw,34px);line-height:1.2;margin:43px 0 17px}
+.tool-main h3{font-size:20px;line-height:1.25;margin:0 0 10px}
+.tool-main p,.tool-main li{font-size:16px;line-height:1.7}
+.tool-main p{margin:12px 0 16px}
+.tool-main a{color:#0b65bf;text-decoration:underline;text-underline-offset:3px}
+.tool-main code{padding:1px 5px;background:#eaf3fa;border-radius:3px;overflow-wrap:anywhere}
+.tool-panel{border:1px solid #cbdcea;border-radius:5px;background:#f4f8fc;padding:27px;margin:27px 0}
+.tool-panel h2{margin:0 0 8px}
+.tool-intro{margin-bottom:22px;color:#536b80}
+.tool-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+.tool-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.tool-field label{font-size:14px;font-weight:700}
+.tool-field input,.tool-field select{display:block;width:100%;min-width:0;min-height:46px;background:#fff;border:1px solid #9bb5cc;border-radius:4px;padding:11px 10px;color:#17324b;font:inherit;font-size:15px}
+.tool-field input:focus-visible,.tool-field select:focus-visible,.tool-button:focus-visible{outline:3px solid #1684ff;outline-offset:2px}
+.tool-field small{font-size:12px;color:#546e85;line-height:1.4}
+.tool-wide{grid-column:span 2}
+.tool-buttons{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:24px}
+.tool-button{background:#1479ee;border:1px solid #1479ee;border-radius:4px;color:#fff;cursor:pointer;min-height:47px;padding:11px 18px;font:inherit;font-size:14px;font-weight:700}
+.tool-button.secondary{background:#fff;border-color:#9bb5cc;color:#17476c}
+.tool-msg{font-size:14px;margin:9px 0 0;color:#8e3e20;min-height:20px}
+.tool-output{margin:20px 0 0;padding:18px;background:#fff;border:1px solid #cedce8;border-radius:4px}
+.tool-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.tool-values div{min-width:0}
+.tool-values small{display:block;color:#5f7385;font-size:12px;margin-bottom:8px}
+.tool-values strong{display:block;font-size:clamp(18px,2.2vw,25px);overflow-wrap:anywhere;color:#082e50}
+.tool-status{font-size:14px;font-weight:600;margin:17px 0 0}
+.tool-tablescroll{overflow-x:auto;border:1px solid #cedce8;border-radius:4px;margin:16px 0}
+.tool-tablescroll table{width:100%;border-collapse:collapse;min-width:530px;font-size:14px}
+.tool-tablescroll th,.tool-tablescroll td{text-align:left;border-bottom:1px solid #e1e9ef;padding:11px 13px}
+.tool-tablescroll th{background:#e8f1f9}
+.tool-tablescroll tr:last-child td{border-bottom:0}
+.tool-callout{border-left:4px solid #1684ff;background:#edf5fc;padding:17px 19px;margin:22px 0}
+.tool-callout p{margin:0}
+.tool-main ol,.tool-main ul{padding-left:25px}
+.tool-related{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.tool-related a{padding:18px;border:1px solid #d1e1ed;border-radius:4px;text-decoration:none;font-weight:600;display:block;min-width:0;overflow-wrap:anywhere}
+.tool-related a:hover{background:#f0f7fc}
+.tool-cta{background:#07243c;color:#fff;padding:29px;margin:45px 0 0;border-radius:4px}
+.tool-cta h2{margin:0 0 10px;font-size:29px}
+.tool-cta p{color:#d6e4ef}
+.tool-cta a{display:inline-block;background:#1479ee;color:white;text-decoration:none;padding:11px 15px;border-radius:3px;font-weight:700}
+@media(max-width:770px){.tool-grid,.tool-values,.tool-related{grid-template-columns:repeat(2,minmax(0,1fr))}.tool-wide{grid-column:span 2}}
+@media(max-width:520px){body.dlv-inner .tool-wrap{width:calc(100% - 32px)}.tool-hero{padding:45px 0}.tool-main{padding:24px 0 48px}.tool-panel{padding:18px 15px}.tool-grid,.tool-values,.tool-related{grid-template-columns:1fr}.tool-wide{grid-column:span 1}.tool-cta{padding:21px}.tool-button{width:100%}}
+</style>
+<link rel="stylesheet" href="/assets/dlv-v6-unified.css"><!-- DLV-UX-V6-SHELL -->
+</head><body class="dlv-inner">
+<header class="dlv-site-header"><div class="dlv-head"><a href="/" class="dlv-logo" aria-label="DLV Automation — главная"><svg class="brand-sign" viewBox="0 0 46 42" aria-hidden="true"><path d="M9 8h31l-7 11H2zM14 24h31l-7 11H7z" fill="currentColor"/></svg><span class="dlv-logo-label"><b>DLV</b><small>AUTOMATION</small></span></a><nav class="dlv-nav" aria-label="Основная навигация"><a href="/uslugi/">Услуги</a><a href="/robotizaciya-proizvodstva/">Роботизация</a><a href="/projects/">Проекты</a><a href="/blog/">Материалы</a><a href="/#contact">Контакты</a></nav><a class="dlv-header-contact" href="mailto:thedlv.pro@gmail.com?subject=%D0%97%D0%B0%D0%BF%D1%80%D0%BE%D1%81%20%D0%BF%D0%BE%20%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%83%20%E2%80%94%20DLV%20Automation">Написать</a></div></header>
+<section class="tool-hero"><div class="tool-wrap">
+<div class="tool-crumb"><a href="/">Главная</a> / <a href="/blog/">Материалы</a> / Аналоговые сигналы 4–20 мА</div>
+<h1>4–20 мА и 0–10 В: калькулятор датчика, ПЛК и шкалы измерения</h1>
+<p>Нужно проверить масштабирование AI в программе ПЛК, показание датчика давления или уровень в SCADA? Введите диапазон преобразователя и ток петли. Калькулятор покажет физическое значение, процент шкалы и пять контрольных точек для I/O-проверки. Можно дополнительно задать реальные коды входного модуля ПЛК.</p>
+</div></section>
+<main class="tool-main"><div class="tool-wrap">
+<section aria-labelledby="tool-heading">
+<h2 id="tool-heading">Онлайн-калькулятор сигнала датчика</h2>
+<p>Расчёт выполняется <strong>локально в браузере</strong>, без регистрации и отправки показаний на сервер. Поддерживаются линейные сигналы <strong>4–20 мА</strong> и <strong>0–10 В</strong>. Значения между заданными границами интерполируются, за границами — показывается линейная экстраполяция с предупреждением.</p>
+<div class="tool-panel">
+<form id="scale-form">
+<div class="tool-grid">
+<div class="tool-field"><label for="signal-kind">Тип сигнала</label><select id="signal-kind"><option value="ma">4–20 мА</option><option value="v">0–10 В</option></select></div>
+<div class="tool-field"><label for="signal-reading">Измеренный сигнал</label><input id="signal-reading" type="number" inputmode="decimal" step="any" value="12" required><small id="signal-hint">Ток в мА, например 12</small></div>
+<div class="tool-field"><label for="eu-unit">Единица измерения</label><input id="eu-unit" value="бар" maxlength="16"><small>бар, °C, %, м, м³/ч</small></div>
+<div class="tool-field"><label for="eu-min">Начало шкалы</label><input id="eu-min" type="number" inputmode="decimal" step="any" value="0" required><small>Физическое значение при 4 мА</small></div>
+<div class="tool-field"><label for="eu-max">Конец шкалы</label><input id="eu-max" type="number" inputmode="decimal" step="any" value="10" required><small>Физическое значение при 20 мА</small></div>
+<div class="tool-field"><label for="eu-target">Контрольное значение процесса</label><input id="eu-target" type="number" inputmode="decimal" step="any" value="5" required><small>Для обратного расчёта ожидаемого сигнала</small></div>
+<div class="tool-field"><label for="raw-low">Raw-код при начале сигнала</label><input id="raw-low" type="number" inputmode="numeric" step="any" placeholder="Необязательно"><small>Из руководства аналогового модуля</small></div>
+<div class="tool-field"><label for="raw-high">Raw-код при конце сигнала</label><input id="raw-high" type="number" inputmode="numeric" step="any" placeholder="Необязательно"><small>Не предполагаем 0–27648 для всех ПЛК</small></div>
+<div class="tool-field"><label for="raw-measured">Измеренный raw-код ПЛК</label><input id="raw-measured" type="number" inputmode="numeric" step="any" placeholder="Необязательно"><small>Пересчёт raw → физическое значение</small></div>
+</div>
+<div class="tool-buttons"><button class="tool-button" type="submit" id="scale-calculate">Рассчитать</button><button class="tool-button secondary" type="button" id="scale-export">Скачать 5-точечный CSV</button></div>
+<p id="scale-error" class="tool-msg" role="alert"></p>
+</form>
+<div class="tool-output" id="scale-output" aria-live="polite">
+<div class="tool-values"><div><small>Значение по измеренному сигналу</small><strong id="scale-value">5 бар</strong></div><div><small>Доля измерительного диапазона</small><strong id="scale-percent">50 %</strong></div><div><small>Ожидаемый сигнал для контрольного значения</small><strong id="scale-expected">12 мА</strong></div></div>
+<p id="scale-status" class="tool-status">Сигнал в рабочем диапазоне.</p>
+<p id="scale-raw-result">Для raw-расчёта введите коды начала и конца шкалы из паспорта модуля.</p>
+</div>
+<h3 style="margin:27px 0 7px">Контрольные точки 0–25–50–75–100 %</h3>
+<p class="tool-intro">Для согласования шкалы датчика, ПЛК и отображения в SCADA. Raw-колонка появляется после ввода кодов обеих границ.</p>
+<div class="tool-tablescroll"><table><thead><tr><th>Процент</th><th id="signal-th">Сигнал, мА</th><th>Физическое значение</th><th>Raw ПЛК</th></tr></thead><tbody id="scale-checkpoints"></tbody></table></div>
+</div></section>
+<section><h2>Формула масштабирования 4–20 мА</h2>
+<p>Для линейного выхода преобразователя <strong>4 мА соответствует нижнему пределу LRV</strong>, а <strong>20 мА — верхнему пределу URV</strong>. Разница между ними составляет 16 мА. Значение процесса рассчитывается так:</p>
+<div class="tool-callout"><p><strong>PV = LRV + (I − 4) × (URV − LRV) / 16</strong></p></div>
+<p>Обратный расчёт: <code>I = 4 + 16 × (PV − LRV) / (URV − LRV)</code>. Здесь <code>I</code> — ток в мА, <code>PV</code> — инженерное значение, <code>LRV</code> и <code>URV</code> — пределы калиброванной шкалы датчика. Для входа 0–10 В в обеих формулах вместо 4 и 20 используются 0 и 10 В.</p>
+<p><strong>Пример:</strong> датчик давления 0–10 бар при 12 мА показывает 5 бар. Для уровня −2…+6 м при 12 мА соответствует 2 м. Начало шкалы не обязательно равно нулю; возможны также обратные диапазоны, если они действительно настроены в преобразователе.</p>
+<h2>Как перевести raw-значение аналогового входа ПЛК</h2>
+<p>В программе ПЛК канал AI может выдавать не ток в мА, а цифровой отсчёт АЦП. Нельзя без проверки считать, что любой Siemens, ОВЕН, Rockwell или другой модуль использует один и тот же диапазон. У некоторых модулей представление зависит от выбранного режима измерения (например, 0–20 мА или 4–20 мА), аппаратной конфигурации и способа нормирования.</p>
+<p>Если из документации известны raw-значения <code>RAW_L</code> и <code>RAW_H</code>, соответствующие 4 и 20 мА (или 0 и 10 В), то при линейном преобразовании:</p>
+<div class="tool-callout"><p><strong>PV = LRV + (RAW − RAW_L) × (URV − LRV) / (RAW_H − RAW_L)</strong></p></div>
+<p>Заполните raw-поля в калькуляторе — появится результат по текущему коду и ожидаемые отсчёты для пяти контрольных точек. Не используйте значения raw «по памяти»: сначала сверяйте паспорт конкретного аналогового модуля, настройки диапазона и диагностические коды.</p>
+<h2>Как провести проверку 4–20 мА перед пусконаладкой</h2>
+<ol><li>Зафиксируйте тег AI, прибор, заводскую шкалу и настройки диапазона в модуле ПЛК.</li>
+<li>На согласованном безопасном стенде или штатным калибратором подайте 4, 8, 12, 16 и 20 мА (не вмешиваясь в опасный технологический контур без наряда и процедуры).</li>
+<li>Сравните физическое значение на HMI/SCADA с таблицей калькулятора и укажите допуски с учётом точности прибора и входного модуля.</li>
+<li>Отдельно проверьте обрыв петли, выход за рабочий диапазон и реакцию системы на плохое качество сигнала — ожидаемые пороги задаются паспортом прибора и проектом.</li>
+<li>Сохраните результат в протоколе I/O-тестов. Для более полного сценария см. <a href="/blog/fat-io-testy-pnr-asu-tp/">порядок FAT, I/O и SAT</a>.</li></ol>
+<div class="tool-callout"><p><strong>Ограничения.</strong> Инструмент рассчитан на <strong>линейные</strong> аналоговые выходы. Для расхода от дифференциального давления может требоваться корнеизвлечение; сигналы с характеристикой, выходящей за линейную шкалу, этим алгоритмом не описываются. 0 мА в токовой петле — не «0 % процесса»: возможны обрыв, отсутствие питания или другие состояния. Нормы аварийных токов и пределы выходов за диапазон зависят от прибора и конфигурации.</p></div>
+<h2>Технические источники</h2>
+<p><a href="https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PASfSAO">NI: How Can I Scale My 4–20mA Sensor Data?</a> · <a href="https://www.solinst.com/products/dataloggers-and-telemetry/301-water-level-temp-sensor/instructions/4-20ma-user-guide/4-1-0-current-calculations.php">Solinst: 4–20 mA current calculations</a>.</p>
+<h2>Связанные материалы</h2>
+<div class="tool-related">
+<a href="/blog/fat-io-testy-pnr-asu-tp/">FAT, SAT и I/O-тесты: протокол проверок →</a>
+<a href="/blog/modbus-registry-kalkulyator/">Modbus: калькулятор адресов регистров 40001 →</a>
+<a href="/programmirovanie-plk/">Программирование и доработка ПЛК →</a>
+<a href="/integraciya-oborudovaniya/">Интеграция приборов и оборудования →</a>
+</div>
+</section>
+<section class="tool-cta"><h2>Нужна разработка или проверка ПО ПЛК?</h2><p>DLV Automation занимается программной частью АСУ ТП: масштабирование аналоговых каналов, обработка качества сигналов, диагностика и проверка алгоритмов. Для оценки потребуется модель ПЛК, конфигурация модуля AI, шкалы приборов и описание задачи.</p><a href="/programmirovanie-plk/">Услуги по программированию ПЛК →</a></section>
+</div></main>
+<footer class="dlv-site-footer"><div class="dlv-foot"><div class="dlv-foot-column"><a class="dlv-logo" href="/" aria-label="DLV Automation"><svg class="brand-sign" viewBox="0 0 46 42" aria-hidden="true"><path d="M9 8h31l-7 11H2zM14 24h31l-7 11H7z" fill="currentColor"/></svg><span class="dlv-logo-label"><b>DLV</b><small>AUTOMATION</small></span></a><p>Программирование и интеграция промышленных систем.</p></div><div class="dlv-foot-column"><h3>Направления</h3><a href="/uslugi/">Все услуги</a><a href="/programmirovanie-plk/">ПЛК</a><a href="/scada-hmi/">SCADA</a><a href="/robotizaciya-proizvodstva/">Роботизация</a></div><div class="dlv-foot-column"><h3>Контакты</h3><a href="mailto:thedlv.pro@gmail.com">thedlv.pro@gmail.com</a><a href="tel:+79237436384">+7 923 743-63-84</a><a href="/projects/">Портфолио</a></div></div><div class="dlv-foot-end">© 2026 DLV Automation · Объём и стоимость работ согласуются индивидуально.</div></footer></body>
+<script>
+(function(){
+"use strict";
+const q=id=>document.getElementById(id);
+const kind=q("signal-kind"), reading=q("signal-reading"), unit=q("eu-unit"), low=q("eu-min"), high=q("eu-max"), target=q("eu-target"), rl=q("raw-low"),rh=q("raw-high"),rm=q("raw-measured");
+const fmt=(n,d=3)=>new Intl.NumberFormat("ru-RU",{maximumFractionDigits:d}).format(n);
+const finite=(n)=>Number.isFinite(n)&&Math.abs(n)<1e12;
+const num=(el)=>{const v=el.value.trim().replace(",",".");return v===""?NaN:Number(v)};
+const valid=(el)=>el.value.trim()!==""&&finite(num(el));
+let currentRows=[];
+function calculate(event){
+if(event)event.preventDefault();
+const isMA=kind.value==="ma", iLo=isMA?4:0, iHi=isMA?20:10, signUnit=isMA?"мА":"В";
+q("signal-th").textContent="Сигнал, "+signUnit;
+q("signal-hint").textContent=isMA?"Ток в мА, например 12":"Напряжение в В, например 5";
+const mandatory=[reading,low,high,target];
+if(!mandatory.every(valid)||num(low)===num(high)){
+q("scale-error").textContent="Введите конечные числовые значения и разные границы шкалы.";q("scale-output").hidden=true;q("scale-checkpoints").replaceChildren();currentRows=[];return;
+}
+const hasRaw=rl.value.trim()!==""||rh.value.trim()!==""||rm.value.trim()!=="";
+const endpoints=valid(rl)&&valid(rh)&&num(rl)!==num(rh);
+if(hasRaw&&!endpoints){
+q("scale-error").textContent="Для raw-расчёта задайте оба разных кода: при нижней и верхней точках сигнала.";q("scale-output").hidden=true;q("scale-checkpoints").replaceChildren();currentRows=[];return;
+}
+if(rm.value.trim()!==""&&!valid(rm)){
+q("scale-error").textContent="Измеренный raw-код должен быть числом.";q("scale-output").hidden=true;q("scale-checkpoints").replaceChildren();currentRows=[];return;
+}
+q("scale-error").textContent="";q("scale-output").hidden=false;
+const i=num(reading), a=num(low), b=num(high), goal=num(target), percent=(i-iLo)/(iHi-iLo),pv=a+percent*(b-a),signalGoal=iLo+(goal-a)/(b-a)*(iHi-iLo);
+if(![percent,pv,signalGoal].every(finite)){
+q("scale-error").textContent="Результат выходит за пределы допустимых чисел.";q("scale-output").hidden=true;currentRows=[];return;
+}
+const eu=unit.value.trim().slice(0,16)||"ед.";
+q("scale-value").textContent=fmt(pv)+" "+eu;
+q("scale-percent").textContent=fmt(percent*100,2)+" %";
+q("scale-expected").textContent=fmt(signalGoal,4)+" "+signUnit;
+q("scale-status").textContent=(i<iLo||i>iHi)?"Внимание: сигнал за пределами выбранного рабочего диапазона. Вычислена линейная экстраполяция, не диагноз неисправности.":"Сигнал внутри выбранного рабочего диапазона.";
+q("scale-raw-result").textContent=!endpoints?"Для raw-расчёта введите коды начала и конца шкалы из паспорта модуля.":(rm.value.trim()!==""?"Физическое значение по raw-коду: "+fmt(a+(num(rm)-num(rl))/(num(rh)-num(rl))*(b-a))+" "+eu+"; ":"")+"Ожидаемый raw-код для измеренного сигнала: "+fmt(num(rl)+percent*(num(rh)-num(rl)),2)+".";
+const tbody=q("scale-checkpoints");tbody.replaceChildren();currentRows=[];
+for(const f of [0,.25,.5,.75,1]){
+ const row=[fmt(f*100,0)+" %",fmt(iLo+f*(iHi-iLo),4)+" "+signUnit,fmt(a+f*(b-a))+" "+eu,endpoints?fmt(num(rl)+f*(num(rh)-num(rl)),2):"—"];
+ const tr=document.createElement("tr");
+ for(const value of row){const td=document.createElement("td");td.textContent=value;tr.appendChild(td)}tbody.appendChild(tr);
+ currentRows.push(row);
+}
+}
+q("scale-form").addEventListener("submit",calculate);
+kind.addEventListener("change",()=>{reading.value=kind.value==="ma"?"12":"5";calculate()});
+q("scale-export").addEventListener("click",()=>{
+calculate();
+if(currentRows.length!==5)return;
+const data=[["Доля шкалы","Сигнал","Физическое значение","Raw ПЛК"],...currentRows];
+const cell=s=>{let v=String(s);if(/^[=+@]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"';};
+const csv="\uFEFF"+data.map(x=>x.map(cell).join(";")).join("\r\n")+"\r\n";
+const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="DLV_4-20mA_IO_checks.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(u);
+});
+calculate();
+})();
+</script></body></html>
