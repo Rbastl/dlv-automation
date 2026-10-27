@@ -44,7 +44,7 @@ def local_path(href):
 
 def main():
     paths = sorted(p for p in ROOT.rglob("index.html") if not any(k in EXCLUDED for k in p.parts))
-    if len(paths) != 50: raise AssertionError(f"Expected 50 HTML entry files, got {len(paths)}")
+    if len(paths) != 51: raise AssertionError(f"Expected 51 HTML entry files, got {len(paths)}")
     data = {}
     for p in paths:
         parser = Tags()
@@ -82,8 +82,8 @@ def main():
     sitemap = ET.parse("sitemap.xml")
     ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
     urls = [e.text for e in sitemap.findall(".//s:url/s:loc", ns)]
-    if len(urls) != 48 or len(urls) != len(set(urls)):
-        raise AssertionError(f"Sitemap expected 48 unique URLs; got {len(urls)}")
+    if len(urls) != 49 or len(urls) != len(set(urls)):
+        raise AssertionError(f"Sitemap expected 49 unique URLs; got {len(urls)}")
     for uri in urls:
         path = local_path(urlsplit(uri).path.replace("https://dlvautomation.ru",""))
         if not path or not (ROOT/path).is_file(): raise AssertionError(f"Missing sitemap page: {uri}")
