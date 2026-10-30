@@ -27,7 +27,7 @@ jobs:
         run: |
           python3 -m py_compile scripts/yandex_webmaster_analytics.py
           python -m pip install "google-auth>=2.30,<3" "requests>=2.31,<3"
-      - name: Confirm verified Yandex host and queue four priority URLs once
+      - name: Read existing Yandex recrawl queue and quota, submit only missing priority URLs
         run: python scripts/yandex_webmaster_analytics.py
         env:
           DLV_SEO_SHEET_ID: "14GI6k61MSsqpjFFm9w6fZHTteGhKvKnN3_Hn8o9Gq3k"
