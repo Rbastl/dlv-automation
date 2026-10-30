@@ -1,21 +1,28 @@
-name: DLV Google search statistics
+name: DLV Google and Yandex search statistics
 
 on:
   workflow_dispatch:
+    inputs:
+      request_reindex:
+        description: "Yandex: submit four priority commercial URLs for re-crawl (manual only)"
+        type: boolean
+        required: false
+        default: false
   push:
     branches: [main]
     paths:
       - ".github/workflows/seo-search-analytics.yml"
       - "scripts/seo_search_analytics.py"
+      - "scripts/yandex_webmaster_analytics.py"
   schedule:
-    # Every Monday around 09:23 Novosibirsk (02:23 UTC).
+    # Mondays around 09:23 Novosibirsk (02:23 UTC).
     - cron: "23 2 * * 1"
 
 permissions:
   contents: read
 
 jobs:
-  search:
+  google:
     name: Google Search Console to private Google Sheet
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -24,11 +31,34 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install Google OAuth libraries
-        run: python -m pip install "google-auth>=2.30,<3" "requests>=2.31,<3"
+      - name: Check Google collector and install API libraries
+        run: |
+          python3 -m py_compile scripts/seo_search_analytics.py
+          python -m pip install "google-auth>=2.30,<3" "requests>=2.31,<3"
       - name: Read Google search data and update private spreadsheet
         run: python scripts/seo_search_analytics.py
         env:
           DLV_SEO_SHEET_ID: "14GI6k61MSsqpjFFm9w6fZHTteGhKvKnN3_Hn8o9Gq3k"
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-          DLV_YANDEX_ENABLED: "false" # Temporarily paused; secret remains securely stored
+          DLV_YANDEX_ENABLED: "false" # Separate independent job below
+
+  yandex:
+    name: "Yandex Webmaster: sitemap, index and private search metrics"
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check Yandex collector and install API libraries
+        run: |
+          python3 -m py_compile scripts/yandex_webmaster_analytics.py
+          python -m pip install "google-auth>=2.30,<3" "requests>=2.31,<3"
+      - name: Check existing Yandex OAuth and verified HTTPS host, register sitemap once, collect metrics
+        run: python scripts/yandex_webmaster_analytics.py
+        env:
+          DLV_SEO_SHEET_ID: "14GI6k61MSsqpjFFm9w6fZHTteGhKvKnN3_Hn8o9Gq3k"
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          YANDEX_WEBMASTER_TOKEN: ${{ secrets.YANDEX_WEBMASTER_TOKEN }}
+          DLV_YANDEX_RECRAWL: ${{ github.event_name == 'workflow_dispatch' && inputs.request_reindex && 'true' || 'false' }}
