@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check Python syntax and static publication package
         run: |
-          python3 -m py_compile scripts/google_index_audit.py scripts/seo_monitor.py scripts/seo_search_analytics.py
+          python3 -m py_compile scripts/google_index_audit.py scripts/seo_monitor.py scripts/seo_search_analytics.py scripts/yandex_webmaster_analytics.py scripts/test_yandex_webmaster_analytics.py\n          python3 -m unittest discover -s scripts -p 'test_yandex_webmaster_analytics.py'
           python3 examples/iec61131-3-linear-scale/reference_cases.py
           python3 scripts/build_timeweb_site.py
       - name: Validate 49 URL sitemap, V6 service additions, marking and AI pages
