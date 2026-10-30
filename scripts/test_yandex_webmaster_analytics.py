@@ -84,6 +84,37 @@ class YandexCollectorTests(unittest.TestCase):
                 yw.maybe_reindex("/base", {}, yw.sitemap_urls())
                 req.assert_not_called()
 
+    def test_recrawl_does_not_duplicate_already_queued_urls(self):
+        wanted = {yw.SITE + path: "IN_PROGRESS" for path in yw.PRIORITY_PATHS}
+        with patch.dict(os.environ, {"DLV_YANDEX_RECRAWL": "true"}):
+            with patch.object(yw, "recrawl_queue", return_value=wanted):
+                with patch.object(yw, "request_yandex",
+                                  return_value={"quota_remainder": 4}) as req:
+                    with patch.object(yw, "report"):
+                        yw.maybe_reindex("/base", {}, yw.sitemap_urls())
+                    self.assertEqual(req.call_count, 1)
+                    self.assertEqual(req.call_args.args[0], "GET")
+
+    def test_no_post_when_quota_is_exhausted(self):
+        with patch.dict(os.environ, {"DLV_YANDEX_RECRAWL": "true"}):
+            with patch.object(yw, "recrawl_queue", return_value={}):
+                with patch.object(yw, "request_yandex",
+                                  return_value={"quota_remainder": 0}) as req:
+                    with patch.object(yw, "report"):
+                        yw.maybe_reindex("/base", {}, yw.sitemap_urls())
+                    self.assertEqual(req.call_count, 1)
+
+    def test_uncertain_post_is_not_replayed(self):
+        with patch.dict(os.environ, {"DLV_YANDEX_RECRAWL": "true"}):
+            with patch.object(yw, "recrawl_queue", side_effect=[{}, {}]):
+                with patch.object(yw, "request_yandex", side_effect=[
+                    {"quota_remainder": 1}, RuntimeError("gateway 504")
+                ]) as req:
+                    with self.assertRaisesRegex(RuntimeError, "no automatic POST retry"):
+                        yw.maybe_reindex("/base", {}, yw.sitemap_urls())
+                    self.assertEqual(req.call_count, 2)
+
+
     def test_query_rows_match_existing_yandex_sheet_columns(self):
         with patch.object(yw, "request_yandex", return_value={"queries": [{
             "query_text": "программирование плк",
