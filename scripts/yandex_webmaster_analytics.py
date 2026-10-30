@@ -59,11 +59,11 @@ def request_yandex(method, path, headers, label, params=None, payload=None,
                 timeout=(10, 30),
             )
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-            if attempt == 2:
+            if attempt == 2 or method.upper() != "GET":
                 raise RuntimeError("Yandex " + label + ": network unavailable") from None
             time.sleep(2 * (attempt + 1))
             continue
-        if resp.status_code in (500, 502, 503, 504) and attempt < 2:
+        if resp.status_code in (500, 502, 503, 504) and attempt < 2 and method.upper() == "GET":
             time.sleep(2 * (attempt + 1))
             continue
         if resp.status_code == 409 and conflict_ok:
@@ -213,21 +213,59 @@ def already_collected(session, sheet_id, tab, start, end):
                for row in response.json().get("values", []))
 
 
+def recrawl_queue(base, headers):
+    """Read queue before any re-crawl write: POST responses can time out after acceptance."""
+    data = request_yandex("GET", base + "/recrawl/queue", headers,
+                          "recrawl queue", params={"limit": 100})
+    return {task.get("url"): task.get("state", "")
+            for task in data.get("tasks", []) if task.get("url")}
+
+
 def maybe_reindex(base, headers, site_urls):
     if os.getenv("DLV_YANDEX_RECRAWL", "false").lower() != "true":
         return
-    added = 0
-    for path in PRIORITY_PATHS:
-        url = SITE + path
-        if url not in site_urls:
-            raise RuntimeError("Priority page missing from local sitemap")
-        result = request_yandex("POST", base + "/recrawl/queue", headers,
-                                "priority recrawl", payload={"url": url},
-                                conflict_ok=True)
-        if not result.get("already_exists"):
-            added += 1
-    report("Яндекс: приоритетный переобход, новых задач принято: **"
-           + str(added) + "** из " + str(len(PRIORITY_PATHS)) + ".")
+    wanted = [SITE + path for path in PRIORITY_PATHS]
+    if any(url not in site_urls for url in wanted):
+        raise RuntimeError("Priority page missing from local sitemap")
+    existing = recrawl_queue(base, headers)
+    quota = request_yandex("GET", base + "/recrawl/quota", headers,
+                           "recrawl quota")
+    remaining = int(quota.get("quota_remainder", 0))
+    accepted = 0
+    previously = 0
+    skipped_quota = 0
+    for url in wanted:
+        if url in existing:
+            previously += 1
+            continue
+        if remaining <= 0:
+            skipped_quota += 1
+            continue
+        try:
+            reply = request_yandex("POST", base + "/recrawl/queue", headers,
+                                   "priority recrawl", payload={"url": url},
+                                   conflict_ok=True)
+        except RuntimeError:
+            # A failed POST is not necessarily rejected. Inspect the queue
+            # before considering another attempt; never blindly replay a POST.
+            updated = recrawl_queue(base, headers)
+            if url in updated:
+                previously += 1
+                existing = updated
+                remaining = max(0, remaining - 1)
+                continue
+            raise RuntimeError("Yandex recrawl request not confirmed; "
+                               "queue checked, no automatic POST retry") from None
+        if reply.get("already_exists"):
+            previously += 1
+        else:
+            accepted += 1
+            remaining -= 1
+        existing[url] = "IN_PROGRESS"
+    report("Яндекс: переобход коммерческих страниц — новых запросов **"
+           + str(accepted) + "**; уже в очереди **" + str(previously)
+           + "**; не отправлено из-за квоты **" + str(skipped_quota)
+           + "**. Добавление в очередь не гарантирует индексацию.")
 
 
 def main():
