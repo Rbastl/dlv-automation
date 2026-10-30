@@ -43,7 +43,7 @@ jobs:
           DLV_YANDEX_ENABLED: "false" # Separate independent job below
 
   yandex:
-    name: Yandex Webmaster: sitemap, index and private search metrics
+    name: "Yandex Webmaster: sitemap, index and private search metrics"
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
