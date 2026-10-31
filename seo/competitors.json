@@ -64,6 +64,14 @@
     {
       "name": "Автоматика.ру — онлайн-конструктор",
       "url": "https://avtomatika.ru/"
+    },
+    {
+      "name": "Автоматика.ру — блог Modbus/RS-485 и промышленные руководства",
+      "url": "https://avtomatika.ru/blog"
+    },
+    {
+      "name": "Автоматика.ру — коммерческая услуга программирования ПЛК",
+      "url": "https://plc.avtomatika.ru/uslugi/programmirovanie-plk"
     }
   ]
 }
