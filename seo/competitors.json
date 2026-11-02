@@ -72,6 +72,10 @@
     {
       "name": "Автоматика.ру — коммерческая услуга программирования ПЛК",
       "url": "https://plc.avtomatika.ru/uslugi/programmirovanie-plk"
+    },
+    {
+      "name": "Автоматика.ру — диагностика через Modbus Poll",
+      "url": "https://avtomatika.ru/blog/modbus-poll-kak-polzovatsya"
     }
   ]
 }
