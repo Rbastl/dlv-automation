@@ -116,6 +116,23 @@ try{
     }
     if(pageErrors.length>beforeCsvErrors)errors.push('FAT CSV JS: '+pageErrors.slice(beforeCsvErrors).join('; ').slice(0,240));
    }
+   // Verify that the CIP report example downloads as a self-contained CSV, without a server endpoint.
+   if(w===375&&uri==='/cip-moyka-otchety-scada/'){
+    const beforeCipErrors=pageErrors.length;
+    const trigger=page.locator('#dlv-cip-csv');
+    if(await trigger.count()!==1)errors.push('CIP CSV: download button missing');
+    else{
+     const [download]=await Promise.all([page.waitForEvent('download',{timeout:12000}),trigger.click()]);
+     if(download.suggestedFilename()!=='DLV_CIP_SCADA_report_template.csv')errors.push('CIP CSV: filename mismatch');
+     const csv=fs.readFileSync(await download.path(),'utf8');
+     const lines=csv.trim().split(/\r?\n/);
+     if(!csv.startsWith('\uFEFF')||lines.length!==14||!lines[0].includes('Качество данных')||!csv.includes('TEST-CIP-001')||!csv.includes('НЕ ОЦЕНЕНО'))
+      errors.push('CIP CSV: expected header, conditional example and twelve blank rows');
+     if(!(await page.locator('#dlv-cip-csv-hint').textContent())?.includes('Шаблон создан'))
+      errors.push('CIP CSV: status confirmation missing');
+    }
+    if(pageErrors.length>beforeCipErrors)errors.push('CIP CSV JS: '+pageErrors.slice(beforeCipErrors).join('; ').slice(0,240));
+   }
    tested++;
   }
   await page.close();

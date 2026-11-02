@@ -84,6 +84,14 @@
     {
       "name": "СТЭП — разработка ПО для ПЛК, SCADA и HMI",
       "url": "https://step-eng.ru/service/razrabotka-po"
+    },
+    {
+      "name": "Softysol — CIP Expert, электронный журнал и аналитика",
+      "url": "https://softysol.com/ru/cipexpert"
+    },
+    {
+      "name": "Продексис Prod.Lab — операторский интерфейс и рецептуры",
+      "url": "https://prodexsys.ru/prodlab/visual"
     }
   ]
 }
