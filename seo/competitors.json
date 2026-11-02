@@ -76,6 +76,14 @@
     {
       "name": "Автоматика.ру — диагностика через Modbus Poll",
       "url": "https://avtomatika.ru/blog/modbus-poll-kak-polzovatsya"
+    },
+    {
+      "name": "ПРОЕКТ-П — PLC/SCADA и WinCC/InTouch",
+      "url": "https://www.project-p.ru/programmirovanie/"
+    },
+    {
+      "name": "СТЭП — разработка ПО для ПЛК, SCADA и HMI",
+      "url": "https://step-eng.ru/service/razrabotka-po"
     }
   ]
 }
