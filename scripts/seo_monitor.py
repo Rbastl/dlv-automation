@@ -171,6 +171,44 @@ def audit_site():
     except Exception as exc:
         errors.append("Timeweb deployment revision: " + str(exc))
 
+    # A successful GitHub Pages fetch does NOT confirm Timeweb is healthy;
+    # it provides an independent transport/control observation when production
+    # probes fail. Never infer Googlebot/YandexBot access from a runner timeout.
+    mirror_probe = {"checked": False}
+    production_probe_failed = any(
+        msg.startswith(("robots.txt:", "sitemap.xml:", "Timeweb deployment revision:"))
+        for msg in errors
+    )
+    if production_probe_failed:
+        mirror_url = "https://rbastl.github.io/dlv-automation/sitemap.xml"
+        mirror_probe = {"checked": True, "url": mirror_url, "kind": "non-production-control"}
+        try:
+            mirror_status, mirror_final, mirror_body = request(mirror_url, timeout=10)
+            mirror_ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+            mirror_root = ET.fromstring(mirror_body)
+            mirror_urls = [
+                node.text.strip() for node in mirror_root.findall(".//sm:url/sm:loc", mirror_ns)
+                if node.text
+            ]
+            repo_root = ET.parse("sitemap.xml")
+            repo_urls = [
+                node.text.strip() for node in repo_root.findall(".//sm:url/sm:loc", mirror_ns)
+                if node.text
+            ]
+            mirror_probe.update(http=mirror_status, final_url=mirror_final,
+                                url_count=len(mirror_urls),
+                                matches_repo_sitemap=mirror_urls == repo_urls)
+            warnings.append(
+                "Independent GitHub Pages control fetched; this does not validate "
+                "Timeweb production, Googlebot or YandexBot reachability."
+            )
+        except Exception as exc:
+            mirror_probe.update(error=type(exc).__name__ + ": " + str(exc)[:180])
+            warnings.append(
+                "Independent GitHub Pages control also unavailable; cause of "
+                "the Timeweb probe failure remains unverified."
+            )
+
     for url in urls:
         if not url.startswith(HOME + "/"):
             errors.append("Foreign host in sitemap: " + url[:160])
@@ -211,6 +249,7 @@ def audit_site():
         "sitemap_pages": len(urls),
         "expected_deployment_revision": expected_revision,
         "published_deployment_revision": deployed_revision,
+        "independent_mirror_probe": mirror_probe,
         "checked": len(pages),
         "ok": sum(bool(row.get("ok")) for row in pages),
         "errors": errors,
@@ -222,6 +261,9 @@ def audit_site():
             f"Страниц: **{len(pages)}**, проверены без ошибок: **{report['ok']}**. "
             f"Ошибок: **{len(errors)}**; предупреждений: **{len(warnings)}**.\n\n"
             + (f"Timeweb SHA: {deployed_revision[:12] or 'unknown'}; GitHub SHA: {expected_revision[:12] or 'not supplied'}.\n\n")
+            + (f"GitHub Pages control (not Timeweb): {mirror_probe.get('http', 'no HTTP result')}; "
+               f"49-URL match to main: {mirror_probe.get('matches_repo_sitemap', 'unknown')}. "
+               "This is not evidence of Googlebot/YandexBot access.\n\n" if mirror_probe["checked"] else "")
             + ("\n".join("- ❌ " + msg[:220] for msg in errors[:15]) if errors else "✅ Критичных ошибок не обнаружено.")
             + ("\n\n" + "\n".join("- ⚠️ " + msg[:220] for msg in warnings[:10]) if warnings else ""))
     step_summary(text)
