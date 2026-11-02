@@ -115,7 +115,8 @@ jobs:
               assert len(re.findall(r"<section\b", html)) == html.count("</section>"), path
               assert canonical in urls, path
               assert '"datePublished":"2026-10-22"' in html, path
-              assert re.search(r'"dateModified":"2026-10-(?:2[2-9]|3[01])"', html), path
+              date_modified = re.search(r'"dateModified":"(\d{4}-\d{2}-\d{2})"', html)
+              assert date_modified and date_modified.group(1) >= "2026-10-22", path
               if slug == "fat-io-testy-pnr-asu-tp":
                   assert 'id="fat-template-download"' in html, path
                   assert "DLV_FAT_IO_test_protocol_template.csv" in html, path
