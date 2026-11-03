@@ -92,6 +92,14 @@
     {
       "name": "Продексис Prod.Lab — операторский интерфейс и рецептуры",
       "url": "https://prodexsys.ru/prodlab/visual"
+    },
+    {
+      "name": "ТехИнтегра — программирование ПЛК и SCADA",
+      "url": "https://www.techintegra.ru/services/programmirovanie/programmirovanie-logicheskikh-kontrollerov-plc/"
+    },
+    {
+      "name": "Automation Spirit Alliance — PLC/HMI/SCADA",
+      "url": "https://automationspirit.com/ru/services/razrabotka-po-plc-hmi-scada-ru/"
     }
   ]
 }

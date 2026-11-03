@@ -102,6 +102,7 @@ try{
    // A useful free resource must actually download an editable UTF-8 CSV.
    if(w===375&&uri==='/blog/fat-io-testy-pnr-asu-tp/'){
     const beforeCsvErrors=pageErrors.length;
+    let templateCsvForReview='';
     const trigger=page.locator('#fat-template-download');
     if(await trigger.count()!==1)errors.push('FAT CSV: download button missing');
     else{
@@ -109,10 +110,44 @@ try{
      if(download.suggestedFilename()!=='DLV_FAT_IO_test_protocol_template.csv')errors.push('FAT CSV: unexpected filename');
      const csv=fs.readFileSync(await download.path(),'utf8');
      const lines=csv.trim().split(/\r?\n/);
+     templateCsvForReview=csv;
      if(!csv.startsWith('\uFEFF')||lines.length!==21||!lines[0].includes('Адрес ПЛК')||!csv.includes('ПРИМЕР-03')||!csv.includes('TEST-15'))
       errors.push('FAT CSV: expected header, five examples and fifteen blank test rows');
      if(!(await page.locator('#fat-template-hint').textContent())?.includes('Готово'))
       errors.push('FAT CSV: success message missing');
+    }
+    // Review the downloadable protocol entirely in the browser (no server request).
+    const fileInput=page.locator('#fat-review-file'),check=page.locator('#fat-review-run');
+    if(await fileInput.count()!==1||await check.count()!==1)errors.push('FAT browser QA: file input or check button missing');
+    else{
+     const originalCsv=templateCsvForReview;
+     await fileInput.setInputFiles({name:'DLV_FAT_IO_test_protocol_template.csv',mimeType:'text/csv',buffer:Buffer.from(originalCsv,'utf8')});
+     await check.click();
+     await page.locator('#fat-review-results').waitFor({state:'visible',timeout:8000});
+     const demoSummary=await page.locator('#fat-review-summary').textContent();
+     if(!demoSummary?.includes('Рабочих строк: 0')||!demoSummary?.includes('примеров пропущено: 5')||!demoSummary?.includes('пустых строк: 15'))
+      errors.push('FAT browser QA: template examples counted as actual tests or blank rows lost; status='+(await page.locator('#fat-review-status').textContent())+'; summary='+demoSummary);
+     const header=originalCsv.split(/\r?\n/)[0];
+     const invalid=['REAL-01','Участок A','XV-101','DI','I0.0','Допуск согласован','Безопасный тест','DI ожидается','SCADA ожидается','','PASS','','','v1','2026-11-03'];
+     const valid=['REAL-02','Участок A','XV-101','DI','I0.0','Допуск согласован','Безопасный тест','DI ожидается','SCADA ожидается','Подтверждено','PASS','','Инженер','v1','2026-11-03'];
+     const rowCsv=record=>record.map(value=>JSON.stringify(value)).join(';');
+     await fileInput.setInputFiles({name:'fat_missing_evidence.csv',mimeType:'text/csv',buffer:Buffer.from(header+'\r\n'+rowCsv(invalid)+'\r\n','utf8')});
+     await check.click();
+     await page.locator('#fat-review-results').waitFor({state:'visible',timeout:8000});
+     const invalidText=await page.locator('#fat-review-summary').textContent();
+     if(!invalidText?.includes('Рабочих строк: 1')||!invalidText?.includes('ошибок: 2')||!(await page.locator('#fat-review-status').textContent())?.includes('Есть ошибки'))
+      errors.push('FAT browser QA: incomplete PASS evidence not detected; status='+(await page.locator('#fat-review-status').textContent())+'; summary='+invalidText);
+     await fileInput.setInputFiles({name:'fat_complete.csv',mimeType:'text/csv',buffer:Buffer.from(header+'\r\n'+rowCsv(valid)+'\r\n','utf8')});
+     await check.click();
+     await page.locator('#fat-review-results').waitFor({state:'visible',timeout:8000});
+     const validText=await page.locator('#fat-review-summary').textContent();
+     if(!validText?.includes('Рабочих строк: 1')||!validText?.includes('ошибок: 0')||!(await page.locator('#fat-review-status').textContent())?.includes('Формат проверен'))
+      errors.push('FAT browser QA: complete PASS has unexpected validation error; status='+(await page.locator('#fat-review-status').textContent())+'; summary='+validText);
+     await fileInput.setInputFiles({name:'malformed.csv',mimeType:'text/csv',buffer:Buffer.from('ID;broken\r\n','utf8')});
+     await check.click();
+     await page.waitForFunction(()=>document.getElementById('fat-review-status')?.textContent?.includes('Отсутствуют колонки'),null,{timeout:8000});
+     if(!(await page.locator('#fat-review-status').textContent())?.includes('Отсутствуют колонки'))
+      errors.push('FAT browser QA: malformed CSV header was not rejected; status='+(await page.locator('#fat-review-status').textContent()));
     }
     if(pageErrors.length>beforeCsvErrors)errors.push('FAT CSV JS: '+pageErrors.slice(beforeCsvErrors).join('; ').slice(0,240));
    }
