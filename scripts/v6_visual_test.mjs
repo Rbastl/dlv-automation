@@ -102,6 +102,7 @@ try{
    // A useful free resource must actually download an editable UTF-8 CSV.
    if(w===375&&uri==='/blog/fat-io-testy-pnr-asu-tp/'){
     const beforeCsvErrors=pageErrors.length;
+    let templateCsvForReview='';
     const trigger=page.locator('#fat-template-download');
     if(await trigger.count()!==1)errors.push('FAT CSV: download button missing');
     else{
@@ -109,6 +110,7 @@ try{
      if(download.suggestedFilename()!=='DLV_FAT_IO_test_protocol_template.csv')errors.push('FAT CSV: unexpected filename');
      const csv=fs.readFileSync(await download.path(),'utf8');
      const lines=csv.trim().split(/\r?\n/);
+     templateCsvForReview=csv;
      if(!csv.startsWith('\uFEFF')||lines.length!==21||!lines[0].includes('Адрес ПЛК')||!csv.includes('ПРИМЕР-03')||!csv.includes('TEST-15'))
       errors.push('FAT CSV: expected header, five examples and fifteen blank test rows');
      if(!(await page.locator('#fat-template-hint').textContent())?.includes('Готово'))
@@ -118,7 +120,7 @@ try{
     const fileInput=page.locator('#fat-review-file'),check=page.locator('#fat-review-run');
     if(await fileInput.count()!==1||await check.count()!==1)errors.push('FAT browser QA: file input or check button missing');
     else{
-     const originalCsv=fs.readFileSync(await download.path(),'utf8');
+     const originalCsv=templateCsvForReview;
      await fileInput.setInputFiles({name:'DLV_FAT_IO_test_protocol_template.csv',mimeType:'text/csv',buffer:Buffer.from(originalCsv,'utf8')});
      await check.click();
      const demoSummary=await page.locator('#fat-review-summary').textContent();
