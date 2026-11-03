@@ -32,7 +32,7 @@ The website publishes a [free RSS 2.0 feed](https://dlvautomation.ru/feed.xml) o
 
 - [4–20 mA / 0–10 V PLC signal scaling calculator and I/O check points](https://dlvautomation.ru/blog/4-20ma-plk-kalkulyator/) — engineering value, raw counts, reverse conversion and five-point CSV checklist.
 - [Modbus register and offset calculator](https://dlvautomation.ru/blog/modbus-registry-kalkulyator/) — practical RTU/TCP examples.
-- [FAT, I/O and SAT commissioning checklist](https://dlvautomation.ru/blog/fat-io-testy-pnr-asu-tp/) — verification sequence and acceptance criteria.
+- [FAT, I/O and SAT commissioning checklist](https://dlvautomation.ru/blog/fat-io-testy-pnr-asu-tp/) — free CSV template, browser-only completeness check (no upload) and engineering acceptance criteria.
 - [Offline FAT/I-O CSV completeness review](examples/fat-io-csv-review/README.md) — free Python checker for the browser-generated test protocol: duplicate IDs, missing acceptance evidence, and documented PASS/FAIL status. Documentation only, no PLC communication.
 - [CIP SCADA event log CSV template](https://dlvautomation.ru/cip-moyka-otchety-scada/#cip-report-template) — original browser-generated field checklist for cycle ID, phases, measurements, data quality and exceptions; not sanitation validation.
 
