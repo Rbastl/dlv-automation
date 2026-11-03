@@ -123,6 +123,7 @@ try{
      const originalCsv=templateCsvForReview;
      await fileInput.setInputFiles({name:'DLV_FAT_IO_test_protocol_template.csv',mimeType:'text/csv',buffer:Buffer.from(originalCsv,'utf8')});
      await check.click();
+     await page.locator('#fat-review-results').waitFor({state:'visible',timeout:8000});
      const demoSummary=await page.locator('#fat-review-summary').textContent();
      if(!demoSummary?.includes('Рабочих строк: 0')||!demoSummary?.includes('примеров пропущено: 5')||!demoSummary?.includes('пустых строк: 15'))
       errors.push('FAT browser QA: template examples counted as actual tests or blank rows lost; status='+(await page.locator('#fat-review-status').textContent())+'; summary='+demoSummary);
@@ -132,16 +133,19 @@ try{
      const rowCsv=record=>record.map(value=>JSON.stringify(value)).join(';');
      await fileInput.setInputFiles({name:'fat_missing_evidence.csv',mimeType:'text/csv',buffer:Buffer.from(header+'\r\n'+rowCsv(invalid)+'\r\n','utf8')});
      await check.click();
+     await page.locator('#fat-review-results').waitFor({state:'visible',timeout:8000});
      const invalidText=await page.locator('#fat-review-summary').textContent();
      if(!invalidText?.includes('Рабочих строк: 1')||!invalidText?.includes('ошибок: 2')||!(await page.locator('#fat-review-status').textContent())?.includes('Есть ошибки'))
       errors.push('FAT browser QA: incomplete PASS evidence not detected; status='+(await page.locator('#fat-review-status').textContent())+'; summary='+invalidText);
      await fileInput.setInputFiles({name:'fat_complete.csv',mimeType:'text/csv',buffer:Buffer.from(header+'\r\n'+rowCsv(valid)+'\r\n','utf8')});
      await check.click();
+     await page.locator('#fat-review-results').waitFor({state:'visible',timeout:8000});
      const validText=await page.locator('#fat-review-summary').textContent();
      if(!validText?.includes('Рабочих строк: 1')||!validText?.includes('ошибок: 0')||!(await page.locator('#fat-review-status').textContent())?.includes('Формат проверен'))
       errors.push('FAT browser QA: complete PASS has unexpected validation error; status='+(await page.locator('#fat-review-status').textContent())+'; summary='+validText);
      await fileInput.setInputFiles({name:'malformed.csv',mimeType:'text/csv',buffer:Buffer.from('ID;broken\r\n','utf8')});
      await check.click();
+     await page.waitForFunction(()=>document.getElementById('fat-review-status')?.textContent?.includes('Отсутствуют колонки'),null,{timeout:8000});
      if(!(await page.locator('#fat-review-status').textContent())?.includes('Отсутствуют колонки'))
       errors.push('FAT browser QA: malformed CSV header was not rejected; status='+(await page.locator('#fat-review-status').textContent()));
     }
