@@ -114,6 +114,35 @@ try{
      if(!(await page.locator('#fat-template-hint').textContent())?.includes('Готово'))
       errors.push('FAT CSV: success message missing');
     }
+    // Review the downloadable protocol entirely in the browser (no server request).
+    const fileInput=page.locator('#fat-review-file'),check=page.locator('#fat-review-run');
+    if(await fileInput.count()!==1||await check.count()!==1)errors.push('FAT browser QA: file input or check button missing');
+    else{
+     const originalCsv=fs.readFileSync(await download.path(),'utf8');
+     await fileInput.setInputFiles({name:'DLV_FAT_IO_test_protocol_template.csv',mimeType:'text/csv',buffer:Buffer.from(originalCsv,'utf8')});
+     await check.click();
+     const demoSummary=await page.locator('#fat-review-summary').textContent();
+     if(!demoSummary?.includes('Рабочих строк: 0')||!demoSummary?.includes('примеров пропущено: 5')||!demoSummary?.includes('пустых строк: 15'))
+      errors.push('FAT browser QA: template examples counted as actual tests or blank rows lost');
+     const header=originalCsv.split(/\r?\n/)[0];
+     const invalid=['REAL-01','Участок A','XV-101','DI','I0.0','Допуск согласован','Безопасный тест','DI ожидается','SCADA ожидается','','PASS','','','v1','2026-11-03'];
+     const valid=['REAL-02','Участок A','XV-101','DI','I0.0','Допуск согласован','Безопасный тест','DI ожидается','SCADA ожидается','Подтверждено','PASS','','Инженер','v1','2026-11-03'];
+     const rowCsv=record=>record.map(value=>JSON.stringify(value)).join(';');
+     await fileInput.setInputFiles({name:'fat_missing_evidence.csv',mimeType:'text/csv',buffer:Buffer.from(header+'\r\n'+rowCsv(invalid)+'\r\n','utf8')});
+     await check.click();
+     const invalidText=await page.locator('#fat-review-summary').textContent();
+     if(!invalidText?.includes('Рабочих строк: 1')||!invalidText?.includes('ошибок: 2')||!(await page.locator('#fat-review-status').textContent())?.includes('Есть ошибки'))
+      errors.push('FAT browser QA: incomplete PASS evidence not detected');
+     await fileInput.setInputFiles({name:'fat_complete.csv',mimeType:'text/csv',buffer:Buffer.from(header+'\r\n'+rowCsv(valid)+'\r\n','utf8')});
+     await check.click();
+     const validText=await page.locator('#fat-review-summary').textContent();
+     if(!validText?.includes('Рабочих строк: 1')||!validText?.includes('ошибок: 0')||!(await page.locator('#fat-review-status').textContent())?.includes('Формат проверен'))
+      errors.push('FAT browser QA: complete PASS has unexpected validation error');
+     await fileInput.setInputFiles({name:'malformed.csv',mimeType:'text/csv',buffer:Buffer.from('ID;broken\r\n','utf8')});
+     await check.click();
+     if(!(await page.locator('#fat-review-status').textContent())?.includes('Отсутствуют колонки'))
+      errors.push('FAT browser QA: malformed CSV header was not rejected');
+    }
     if(pageErrors.length>beforeCsvErrors)errors.push('FAT CSV JS: '+pageErrors.slice(beforeCsvErrors).join('; ').slice(0,240));
    }
    // Verify that the CIP report example downloads as a self-contained CSV, without a server endpoint.
