@@ -15,8 +15,10 @@ on:
       - "scripts/seo_search_analytics.py"
       - "scripts/yandex_webmaster_analytics.py"
   schedule:
-    # Mondays around 09:23 Novosibirsk (02:23 UTC).
-    - cron: "23 2 * * 1"
+    # Mon and Thu around 09:23 Novosibirsk (02:23 UTC): two early SEO pulses/week.
+    # The 7-day GSC windows overlap: compare only date-disjoint weeks for growth.
+    # Existing collectors skip duplicate period keys in private Google Sheets.
+    - cron: "23 2 * * 1,4"
 
 permissions:
   contents: read
