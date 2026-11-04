@@ -151,6 +151,25 @@ try{
     }
     if(pageErrors.length>beforeCsvErrors)errors.push('FAT CSV JS: '+pageErrors.slice(beforeCsvErrors).join('; ').slice(0,240));
    }
+   // Industrial AI readiness template: file must be generated locally, without upload.
+   if(w===375&&uri==='/blog/ii-na-proizvodstve-2026/'){
+    const button=page.locator('#ai-pilot-download'),beforeErrors=pageErrors.length;
+    if(await button.count()!==1)errors.push('AI readiness: CSV button missing');
+    else{
+     const [download]=await Promise.all([page.waitForEvent('download',{timeout:12000}),button.click()]);
+     if(download.suggestedFilename()!=='DLV_Industrial_AI_Pilot_Readiness_Checklist.csv')
+      errors.push('AI readiness: unexpected filename');
+     const csv=fs.readFileSync(await download.path(),'utf8');
+     const rows=csv.trim().split(/\r?\n/);
+     if(!csv.startsWith('\uFEFF')||rows.length!==13||!rows[0].includes('Ответственный')||!csv.includes('Синхронизированы метки времени')||!csv.includes('Safety-функциями'))
+      errors.push('AI readiness: expected BOM, header and 12 original engineering checks');
+     if(!(await page.locator('#ai-pilot-status').textContent())?.includes('12 пунктов'))
+      errors.push('AI readiness: browser download confirmation missing');
+     if(await page.locator('.ai-pilot-share a').count()!==2)
+      errors.push('AI readiness: share links missing');
+    }
+    if(pageErrors.length>beforeErrors)errors.push('AI readiness JS: '+pageErrors.slice(beforeErrors).join('; ').slice(0,240));
+   }
    // Verify that the CIP report example downloads as a self-contained CSV, without a server endpoint.
    if(w===375&&uri==='/cip-moyka-otchety-scada/'){
     const beforeCipErrors=pageErrors.length;
