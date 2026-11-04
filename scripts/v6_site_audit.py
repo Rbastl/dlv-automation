@@ -44,7 +44,7 @@ def local_path(href):
 
 def main():
     paths = sorted(p for p in ROOT.rglob("index.html") if not any(k in EXCLUDED for k in p.parts))
-    if len(paths) != 51: raise AssertionError(f"Expected 51 HTML entry files, got {len(paths)}")
+    if len(paths) != 52: raise AssertionError(f"Expected 52 HTML entry files, got {len(paths)}")
     data = {}
     for p in paths:
         parser = Tags()
@@ -82,8 +82,8 @@ def main():
     sitemap = ET.parse("sitemap.xml")
     ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
     urls = [e.text for e in sitemap.findall(".//s:url/s:loc", ns)]
-    if len(urls) != 49 or len(urls) != len(set(urls)):
-        raise AssertionError(f"Sitemap expected 49 unique URLs; got {len(urls)}")
+    if len(urls) != 50 or len(urls) != len(set(urls)):
+        raise AssertionError(f"Sitemap expected 50 unique URLs; got {len(urls)}")
     for uri in urls:
         path = local_path(urlsplit(uri).path.replace("https://dlvautomation.ru",""))
         if not path or not (ROOT/path).is_file(): raise AssertionError(f"Missing sitemap page: {uri}")
@@ -92,8 +92,8 @@ def main():
     if fr.tag != "rss" or fr.attrib.get("version") != "2.0":
         raise AssertionError("RSS feed must be valid RSS 2.0")
     feed_items = fr.findall("./channel/item")
-    if len(feed_items) != 11:
-        raise AssertionError(f"RSS feed expected 11 original articles, got {len(feed_items)}")
+    if len(feed_items) != 12:
+        raise AssertionError(f"RSS feed expected 12 original articles, got {len(feed_items)}")
     feed_links = [item.findtext("link") for item in feed_items]
     if len(set(feed_links)) != len(feed_links) or not set(feed_links).issubset(set(urls)):
         raise AssertionError("RSS feed contains duplicate or non-sitemap links")
