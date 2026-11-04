@@ -7,6 +7,13 @@
     <language>ru-RU</language>
     <atom:link href="https://dlvautomation.ru/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
+      <title>ИИ на производстве в 2026: Siemens, NVIDIA, прогноз отказов и пилоты АСУ ТП</title>
+      <link>https://dlvautomation.ru/blog/ii-na-proizvodstve-2026/</link>
+      <guid isPermaLink="true">https://dlvautomation.ru/blog/ii-na-proizvodstve-2026/</guid>
+      <description>Что изменилось в промышленном ИИ в 2026 году: Siemens/NVIDIA, качество у P&amp;G, Rockwell, диагностика оборудования и безопасный AI-пилот с PLC/SCADA.</description>
+      <pubDate>Wed, 04 Nov 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
       <title>4–20 мА и 0–10 В: калькулятор датчика, ПЛК и шкалы измерения</title>
       <link>https://dlvautomation.ru/blog/4-20ma-plk-kalkulyator/</link>
       <guid isPermaLink="true">https://dlvautomation.ru/blog/4-20ma-plk-kalkulyator/</guid>
