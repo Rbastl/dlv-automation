@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ИИ на производстве в 2026: Siemens, NVIDIA и реальные задачи завода | DLV</title>
+<meta name="description" content="Как применяют ИИ на производстве в 2026 году: Siemens, NVIDIA, Rockwell, предиктивная диагностика, SCADA, поиск аномалий и безопасный AI-пилот.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://dlvautomation.ru/blog/ii-na-proizvodstve-2026/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DLV Automation">
+<meta property="og:title" content="ИИ на производстве в 2026 году: Siemens, NVIDIA, предиктивная диагностика и реальная польза для завода">
+<meta property="og:description" content="Как применяют ИИ на производстве в 2026 году: Siemens, NVIDIA, Rockwell, предиктивная диагностика, SCADA, поиск аномалий и безопасный AI-пилот.">
+<meta property="og:url" content="https://dlvautomation.ru/blog/ii-na-proizvodstve-2026/">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"ИИ на производстве в 2026 году: Siemens, NVIDIA, предиктивная диагностика и реальная польза для завода","description":"Как применяют ИИ на производстве в 2026 году: Siemens, NVIDIA, Rockwell, предиктивная диагностика, SCADA, поиск аномалий и безопасный AI-пилот.","datePublished":"2026-11-04","dateModified":"2026-11-04","author":{"@type":"Organization","name":"DLV Automation","url":"https://dlvautomation.ru/"},"publisher":{"@type":"Organization","name":"DLV Automation","url":"https://dlvautomation.ru/"},"mainEntityOfPage":"https://dlvautomation.ru/blog/ii-na-proizvodstve-2026/","inLanguage":"ru-RU","isAccessibleForFree":true,"about":[{"@type":"Thing","name":"Промышленный искусственный интеллект"},{"@type":"Thing","name":"Предиктивное обслуживание оборудования"},{"@type":"Thing","name":"Аналитика PLC и SCADA"}]}</script>
+<style>:root{--n:#041320;--b:#1684ff;--ink:#11283c;--m:#61798d;--line:#dce6ee;--paper:#f4f7fa;--w:980px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Arial,"Segoe UI",sans-serif;color:var(--ink);line-height:1.7}a{color:inherit;text-decoration:none}
+.wrap{width:min(var(--w),calc(100% - 48px));margin:auto}.hero{background:linear-gradient(115deg,#041320,#0a2d4b);color:#fff;padding:70px 0}
+.crumb{font-size:13px;color:#b2c9dc;margin-bottom:18px}.crumb a{text-decoration:underline;text-underline-offset:3px}
+.hero h1{font-size:clamp(31px,4.7vw,53px);line-height:1.13;letter-spacing:-.035em;margin:0;max-width:990px}
+.hero p{font-size:19px;color:#c4d5e3;max-width:850px;margin:20px 0 0}.tagline{margin:16px 0 0;font-size:13px;color:#afd4f7}
+.article{padding:44px 0 60px}.article section{padding:28px 0;border-bottom:1px solid var(--line)}.article h2{font-size:clamp(23px,3vw,30px);line-height:1.24;letter-spacing:-.025em;margin:0 0 15px}
+.article h3{font-size:19px;line-height:1.4;margin:22px 0 9px}.article p{font-size:16px;line-height:1.8;margin:0 0 14px;color:#30495d}.article ul,.article ol{margin:10px 0 20px;padding-left:25px;color:#30495d}.article li{margin:9px 0}.article a:not(.button){color:#0b6bbd;text-decoration:underline;text-underline-offset:2px}
+.article strong{color:#10283d}.article .lead{font-size:18px;color:#1c3850}.article .note{background:#edf5fc;border-left:4px solid var(--b);padding:16px 20px;margin:17px 0;color:#1d4968}
+.article .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0}.article .cell{border:1px solid var(--line);padding:17px;background:#fff}.article .cell h3{margin:0 0 7px;font-size:17px}.article .cell p{margin:0;font-size:15px}
+.article .steps{border-left:3px solid #1684ff;padding-left:20px}.article .steps li{padding-left:5px}
+.article table{border-collapse:collapse;width:100%;font-size:14px;margin:18px 0}.article th,.article td{border:1px solid var(--line);padding:10px 13px;text-align:left;vertical-align:top}.article th{background:#f4f7fa}
+.article .sources{font-size:14px}.article .sources li{overflow-wrap:anywhere}
+.article .cta{background:var(--paper);padding:26px;border-left:4px solid var(--b);margin:34px 0 0}.article .cta h2{margin:0 0 12px}.article .cta p{margin-bottom:18px}
+.article .button{display:inline-block;padding:13px 18px;background:#1479ee;color:#fff;text-decoration:none;border-radius:3px;font-weight:700}
+@media(max-width:700px){.wrap{width:calc(100% - 32px)}.hero{padding:50px 0}.hero p{font-size:16px}.article{padding-top:25px}.article .grid{grid-template-columns:1fr}.article th,.article td{padding:8px 7px;font-size:13px}}</style>
+<link rel="stylesheet" href="/assets/dlv-v6-unified.css">
+<!-- DLV-UX-V6-SHELL -->
+</head>
+<body class="dlv-inner">
+<header class="dlv-site-header"><div class="dlv-head"><a href="/" class="dlv-logo" aria-label="DLV Automation — главная"><svg class="brand-sign" viewBox="0 0 46 42" aria-hidden="true"><path d="M9 8h31l-7 11H2zM14 24h31l-7 11H7z" fill="currentColor"/></svg><span class="dlv-logo-label"><b>DLV</b><small>AUTOMATION</small></span></a><nav class="dlv-nav" aria-label="Основная навигация"><a href="/uslugi/">Услуги</a><a href="/robotizaciya-proizvodstva/">Роботизация</a><a href="/projects/">Проекты</a><a href="/blog/">Материалы</a><a href="/#contact">Контакты</a></nav><a class="dlv-header-contact" href="mailto:thedlv.pro@gmail.com?subject=%D0%97%D0%B0%D0%BF%D1%80%D0%BE%D1%81%20%D0%BF%D0%BE%20%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%83%20%E2%80%94%20DLV%20Automation">Написать</a></div></header>
+<section class="hero"><div class="wrap">
+<div class="crumb"><a href="/">Главная</a> / <a href="/blog/">Материалы</a> / Промышленный ИИ</div>
+<h1>ИИ на производстве в 2026 году: Siemens, NVIDIA, предиктивная диагностика и реальная польза для завода</h1>
+<p>Пока одни обсуждают искусственный интеллект на конференциях, Siemens, NVIDIA и Rockwell уже показывают производственные сценарии: от предупреждения отказов до контроля качества. Разбираем факты 2026 года и то, с чего разумно начать на действующем предприятии.</p>
+<p class="tagline">Аналитика DLV Automation · 4 ноября 2026 · ИИ / PLC / SCADA / производство</p>
+</div></section>
+<main class="article"><div class="wrap">
+<section id="why-now">
+<h2>Почему ИИ на заводе стал не просто модным словом</h2>
+<p class="lead">Главное изменение 2026 года — производители автоматизации переводят ИИ из презентаций в задачи с измеримым результатом: выявление ранних признаков неисправностей, контроль дефектов, оптимизацию загрузки оборудования и помощь инженерам.</p>
+<p>Но «внедрить ChatGPT на заводе» и внедрить промышленный ИИ — разные проекты. Производству нужен не красивый диалог, а достоверные исходные данные, понятная ответственность за решение и безопасная связь с действующей АСУ ТП. В большинстве случаев первым шагом становится <a href="/scada-hmi/">PLC/SCADA и качественный архив технологических событий</a>, а не покупка самой сложной нейросети.</p>
+<p>Ниже — четыре конкретных новости и наш инженерный взгляд на то, где ИИ способен принести пользу, а где обычная диагностика лучше.</p>
+</section>
+<section id="news-2026">
+<h2>Что произошло в промышленном ИИ в 2026 году: Siemens, NVIDIA, Rockwell и Schneider</h2>
+<h3>Siemens и NVIDIA: ИИ и цифровой двойник на действующем заводе</h3>
+<p>19 октября 2026 года Siemens представила в Эрлангене разработки вместе с NVIDIA: ИИ помогает оценивать варианты производственного планирования, а цифровой двойник позволяет протестировать сценарий до изменения реального процесса. Для подготовки визуального контроля печатных плат используются синтетические изображения из цифровой модели. В пресс-релизе Siemens указан <strong>потенциал сокращения инженерных трудозатрат до 85%</strong> для конкретного процесса подготовки проверки плат; это не универсальная экономия на любом заводе. <a href="https://press.siemens.com/global/en/pressrelease/siemens-partners-nvidia-advance-ai-driven-autonomous-factories" rel="noopener noreferrer">Источник: Siemens, 19.10.2026</a>.</p>
+<h3>Siemens и Procter &amp; Gamble: ИИ для контроля брака</h3>
+<p>В сентябре Siemens сообщила о масштабировании системы машинного зрения и анализа качества на производствах Procter &amp; Gamble. По информации компаний, для отдельных видов продукции брак снизился на <strong>10–20%</strong>; новые конфигурации системы могут вводиться быстрее традиционных специализированных решений. Это результаты конкретного производителя и класса задач, а не обещание для любого предприятия. <a href="https://press.siemens.com/global/en/pressrelease/siemens-and-procter-gamble-scale-ai-based-quality-inspection-across-global-production" rel="noopener noreferrer">Источник: Siemens, 15.09.2026</a>.</p>
+<h3>Rockwell Automation и Augury: от предсказания отказа к ремонту</h3>
+<p>23 июля 2026 года Rockwell Automation и Augury объявили о сотрудничестве: данные о состоянии оборудования и AI-диагностика должны связываться с инструментами технического обслуживания Fiix и FactoryTalk Optix. Здесь важен не только прогноз аномалии, но и последующее действие — проверка специалистом, формирование задачи и фиксация ремонта. <a href="https://www.rockwellautomation.com/en-us/company/news/press-releases/rockwell-automation-and-augury-partner-to-improve-industrial-performance-with-agentic-ai.html" rel="noopener noreferrer">Источник: Rockwell, 23.07.2026</a>.</p>
+<h3>Siemens Eigen и Schneider Electric: ИИ приходит в работу инженера АСУ ТП</h3>
+<p>Siemens представила Eigen Engineering Agent, связанный с TIA Portal и задачами автоматизации. Schneider Electric совместно с Microsoft показала направление агентной автоматизации на базе EcoStruxure Automation Expert и Azure AI. Публичные заявления производителей отражают их продуктовые планы и результаты; они <strong>не отменяют проверки кода, функциональных испытаний, разграничения доступа и требований безопасности</strong> перед внедрением. <a href="https://press.siemens.com/global/en/pressrelease/siemens-launches-eigen-engineering-agent-bringing-purpose-built-ai-industrial" rel="noopener noreferrer">Siemens, 20.04.2026</a> · <a href="https://www.se.com/ww/en/about-us/newsroom/news/press-releases/Schneider-Electric-unveils-next-generation-agentic-manufacturing-capabilities-powered-by-Microsoft-Azure-AI-at-Hannover-Messe-2026-69e08de2ddabef15890a48f3/" rel="noopener noreferrer">Schneider Electric, 16.04.2026</a>.</p>
+<p class="note"><strong>Общий вывод:</strong> отрасль движется к связке «реальные производственные данные → аналитика/ИИ → проверяемая рекомендация → действие человека или штатной системы». Нейросеть сама по себе не заменяет ни ПЛК, ни SCADA, ни квалифицированную службу эксплуатации.</p>
+</section>
+<section id="applications">
+<h2>Пять задач, с которых ИИ действительно стоит начинать</h2>
+<div class="grid">
+<div class="cell"><h3>1. Предиктивная диагностика</h3><p>Ранние отклонения тока, температуры, вибрации, циклов и режимов насосов, приводов, компрессоров и агрегатов. ИИ может предложить осмотр до остановки, если есть надёжная история и подтверждённые события отказов.</p></div>
+<div class="cell"><h3>2. Поиск причин простоев</h3><p>Сопоставление аварий PLC, режимов, сообщений SCADA, действий оператора и истории техобслуживания. Цель — сократить время расследования повторяющихся остановок и улучшить <a href="/uchet-prostoev-oee-asu-tp/">учёт простоев и OEE</a>.</p></div>
+<div class="cell"><h3>3. Контроль качества и машинное зрение</h3><p>Камеры с размеченными примерами дефектов проверяют поверхность, комплектность, этикетку, упаковку или наличие маркировки. Потребуется оценка ложных срабатываний и интеграция с <a href="/mashinnoe-zrenie-na-proizvodstve/">машинным зрением на линии</a>.</p></div>
+<div class="cell"><h3>4. Анализ технологических параметров</h3><p>Поиск нестандартных сочетаний температуры, расхода, давления, рецепта, партии и состояния оборудования. Для технологического решения важно учитывать режим, переходные процессы и корректность измерения.</p></div>
+<div class="cell"><h3>5. Помощник для инженера</h3><p>Поиск по инструкции, журналам неисправностей, спискам PLC-тегов и схемам с обязательной ссылкой на первоисточник. Такой помощник экономит время на поиске информации, но не выдаёт разрешения на вмешательство в оборудование.</p></div>
+</div>
+</section>
+<section id="food-production">
+<h2>Пример для пищевого и молочного производства: где начать пилот</h2>
+<p>Возьмём типовую задачу: на линии периодически останавливается подача продукта. У инженера есть архив SCADA, сообщения об отказах клапанов и насосов, журнал мойки CIP, технологические режимы и время переходов между партиями.</p>
+<p>Простейший полезный пилот — собрать согласованную временную линию: когда поступила команда PLC, был ли ответ от клапана, какие действовали блокировки, что показывал расходомер, менялась ли рецептура и на какой стадии был CIP. Сначала формируем понятные правила и отчёт; затем оцениваем, дают ли методы поиска аномалий дополнительную пользу. Так можно искать повторяющиеся причины остановок, не изменяя алгоритмы управления.</p>
+<p>Технологическую безопасность, требования к пастеризации и санитарную валидацию мойки не может подменять модель. Для исходных данных полезны <a href="/avtomatizaciya-molochnogo-proizvodstva/">маршруты молочного производства</a>, <a href="/cip-moyka-otchety-scada/">журнал CIP/SCADA</a> и <a href="/mes-erp-integration/">обмен с MES/ERP/1С</a>.</p>
+</section>
+<section id="architecture">
+<h2>Как связать ИИ с действующей АСУ ТП, не рискуя производством</h2>
+<p>Для первого этапа разумна архитектура с разделением управления и аналитики:</p>
+<ol class="steps">
+<li><strong>Источники.</strong> Сигналы ПЛК, SCADA/Historian, технологические события, журнал ремонтов, при необходимости ERP/MES и камеры.</li>
+<li><strong>Контролируемый сбор.</strong> Разрешённый read-only доступ через согласованный интерфейс SQL, OPC UA, API или экспорт; защита промышленной сети и учёт качества измерений.</li>
+<li><strong>Контекст.</strong> Метки времени, режим, рецепт, партия, смена, плановая остановка, ручное вмешательство. Без контекста «аномалия» часто оказывается штатным переходом процесса.</li>
+<li><strong>Модель и базовый метод.</strong> Сначала пороги и обычная статистика, затем AI/ML только при дополнительной проверяемой ценности.</li>
+<li><strong>Вывод результата.</strong> Отчёт, рекомендация в SCADA, задача для инженера либо визуальная панель — без прямой команды на Safety PLC или защитные блокировки.</li>
+<li><strong>Контроль.</strong> Ложные тревоги, пропуски, качество данных, версионирование модели, наблюдение за изменением режимов и процедура отключения пилота.</li>
+</ol>
+<p class="note">ИИ не должен напрямую обходить межблокировки, автоматически менять критические уставки или управлять исполнительными механизмами без отдельного полноценного инженерного проекта и проверок безопасности. Для большинства первых пилотов достаточно режима <strong>«наблюдение и рекомендация»</strong>.</p>
+</section>
+<section id="ai-or-rules">
+<h2>Когда ИИ не нужен: обычная диагностика иногда выгоднее</h2>
+<p>Если причина остановки однозначно определяется одним битом Fault или отсутствием обратной связи, начинать стоит с качественных сообщений PLC/SCADA. Если отсутствуют архивы, метки времени или журнал ремонта, обучение модели может только усложнить задачу. ИИ имеет смысл, когда причины зависят от сочетания параметров, динамики и контекста, а простой алгоритм уже не даёт нужного качества.</p>
+<table><thead><tr><th>Ситуация</th><th>Первое решение</th><th>Когда проверять ИИ</th></tr></thead><tbody>
+<tr><td>Срабатывает известная блокировка</td><td>Диагностика PLC и объяснение в SCADA</td><td>Если нужно исследовать повторяющиеся цепочки событий</td></tr>
+<tr><td>Насос иногда выходит из строя</td><td>Осмотр, журнал ремонта, ток/температура/вибрация</td><td>Если есть история отказов и аномалий для проверки прогноза</td></tr>
+<tr><td>Появляются дефекты упаковки</td><td>Стандарты качества, освещение, выборка изображений</td><td>Если фиксированные правила зрения дают неприемлемые пропуски</td></tr>
+<tr><td>Нет точных данных о простоях</td><td>Учёт событий и причин остановок</td><td>После накопления данных, если нужна группировка и поиск закономерностей</td></tr>
+</tbody></table>
+</section>
+<section id="pilot-plan">
+<h2>Как проверить полезность ИИ на заводе без масштабной закупки</h2>
+<p>Мы предлагаем начинать не с обещания «умного завода», а с ограниченного инженерного пилота:</p>
+<ol>
+<li><strong>Выбрать одну дорогую проблему:</strong> повторяющиеся остановки, незапланированный ремонт или конкретный вид дефекта.</li>
+<li><strong>Согласовать измеримый критерий:</strong> время диагностики, число пропущенных отказов, ложные тревоги, доля брака, трудозатраты инженера.</li>
+<li><strong>Проверить доступность и права на данные:</strong> период наблюдения, нужные сигналы, качество времени, журнал реальных инцидентов.</li>
+<li><strong>Проверить обычные методы:</strong> сравнить модель с порогами, правилами и стандартными отчётами, а не только с отсутствием решения.</li>
+<li><strong>Протестировать в тени:</strong> выдавать рекомендации без вмешательства в управление, проверить работу на независимых данных и редких режимах.</li>
+<li><strong>Принять инженерное решение:</strong> продолжать, доработать или отказаться, если достоверный эффект не подтверждён.</li>
+</ol>
+</section>
+<section id="dlv-approach">
+<h2>Что может сделать DLV Automation</h2>
+<p><strong>Наша команда уже имеет практический опыт разработки и внедрения промышленных систем управления</strong> — программирования PLC, операторских систем SCADA/HMI, интеграции оборудования и производственных данных. Опубликованные примеры работ и используемые платформы можно посмотреть в <a href="/projects/">портфолио DLV Automation</a>.</p>
+<p>На основе этого опыта мы <strong>прорабатываем направление промышленного ИИ</strong>: поиск аномалий и причин простоев, аналитику архивов PLC/SCADA, мониторинг состояния оборудования, интеллектуальные отчёты и взаимодействие с MES/ERP. Для новой задачи готовы начать с анализа данных, архитектуры и согласованного пилота. <strong>Промышленное внедрение конкретной AI-модели не заявляем как завершённый кейс без подтверждающих материалов.</strong></p>
+<p>Мы не предлагаем менять работающую АСУ ТП только ради модной технологии. Наша задача — разобраться в процессе, построить корректный сбор данных и определить, есть ли реальная экономическая польза от ИИ. Если её нет, честный результат пилота — рекомендация другого инженерного решения.</p>
+</section>
+<section id="questions">
+<h2>Частые вопросы о внедрении ИИ на производстве</h2>
+<h3>Можно ли подключить ИИ к Siemens S7-1500 или WinCC?</h3>
+<p>Можно анализировать согласованно доступные данные через поддерживаемые интерфейсы и архивы. Реальная схема зависит от версии, лицензий, сетевой архитектуры и требований безопасности. ИИ не должен напрямую управлять защитными функциями.</p>
+<h3>Нужно ли менять действующую SCADA?</h3>
+<p>Не обязательно. Часто проще сначала получить качественные данные из уже работающего верхнего уровня и подготовить read-only прототип.</p>
+<h3>ИИ действительно предсказывает поломки?</h3>
+<p>В некоторых задачах — да, но качество прогноза зависит от данных, режима работы, набора отказов и проверки ложных тревог. Без истории подтверждённых неисправностей обещать точное предсказание нельзя.</p>
+<h3>Можно ли применять ИИ на небольшом заводе?</h3>
+<p>Да, если есть конкретная задача и измеримый результат. Иногда достаточно небольшого аналитического модуля или даже обычной диагностики SCADA — объём решения определяют после аудита.</p>
+</section>
+<section id="sources">
+<h2>Первоисточники: индустриальный ИИ, 2026 год</h2>
+<p>В материале использованы сообщения производителей с точными датами. Заявленные ими проценты относятся к указанным проектам и сценариям, не являются гарантиями экономии DLV.</p>
+<ol class="sources">
+<li><a href="https://press.siemens.com/global/en/pressrelease/siemens-partners-nvidia-advance-ai-driven-autonomous-factories">Siemens / NVIDIA — AI-driven autonomous factories, 19 октября 2026</a>.</li>
+<li><a href="https://press.siemens.com/global/en/pressrelease/siemens-and-procter-gamble-scale-ai-based-quality-inspection-across-global-production">Siemens / Procter &amp; Gamble — AI quality inspection, 15 сентября 2026</a>.</li>
+<li><a href="https://www.rockwellautomation.com/en-us/company/news/press-releases/rockwell-automation-and-augury-partner-to-improve-industrial-performance-with-agentic-ai.html">Rockwell / Augury — AI и обслуживание оборудования, 23 июля 2026</a>.</li>
+<li><a href="https://press.siemens.com/global/en/pressrelease/siemens-launches-eigen-engineering-agent-bringing-purpose-built-ai-industrial">Siemens — Eigen Engineering Agent, 20 апреля 2026</a>.</li>
+<li><a href="https://www.se.com/ww/en/about-us/newsroom/news/press-releases/Schneider-Electric-unveils-next-generation-agentic-manufacturing-capabilities-powered-by-Microsoft-Azure-AI-at-Hannover-Messe-2026-69e08de2ddabef15890a48f3/">Schneider Electric / Microsoft — agentic manufacturing, 16 апреля 2026</a>.</li>
+</ol>
+</section>
+<div class="cta">
+<h2>ИИ для вашего производства: начать с одной измеримой задачи</h2>
+<p>Пришлите описание участка, какие данные есть в PLC/SCADA, какая проблема повторяется и что сейчас известно о её причинах. Мы рассмотрим границы программной интеграции и предложим проверяемый следующий шаг без обещаний чудесной экономии.</p>
+<a class="button" href="mailto:thedlv.pro@gmail.com?subject=DLV%20%E2%80%94%20%D0%9F%D0%B8%D0%BB%D0%BE%D1%82%20%D0%98%D0%98%20%D0%BD%D0%B0%20%D0%BF%D1%80%D0%BE%D0%B8%D0%B7%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%B5">Обсудить AI-пилот с DLV Automation</a>
+<p style="margin-top:16px">Или посмотрите <a href="/ii-na-proizvodstve/">отдельную услугу по внедрению промышленного ИИ</a> и <a href="/mashinnoe-zrenie-na-proizvodstve/">задачи машинного зрения</a>.</p>
+</div>
+</div></main>
+<footer class="dlv-site-footer"><div class="dlv-foot"><div class="dlv-foot-column"><a class="dlv-logo" href="/" aria-label="DLV Automation"><svg class="brand-sign" viewBox="0 0 46 42" aria-hidden="true"><path d="M9 8h31l-7 11H2zM14 24h31l-7 11H7z" fill="currentColor"/></svg><span class="dlv-logo-label"><b>DLV</b><small>AUTOMATION</small></span></a><p>Программирование и интеграция промышленных систем.</p></div><div class="dlv-foot-column"><h3>Направления</h3><a href="/uslugi/">Все услуги</a><a href="/programmirovanie-plk/">ПЛК</a><a href="/scada-hmi/">SCADA</a><a href="/robotizaciya-proizvodstva/">Роботизация</a></div><div class="dlv-foot-column"><h3>Контакты</h3><a href="mailto:thedlv.pro@gmail.com">thedlv.pro@gmail.com</a><a href="tel:+79237436384">+7 923 743-63-84</a><a href="/projects/">Портфолио</a></div></div><div class="dlv-foot-end">© 2026 DLV Automation · Объём и стоимость работ согласуются индивидуально.</div></footer>
+</body></html>
