@@ -262,7 +262,7 @@ def audit_site():
             f"Ошибок: **{len(errors)}**; предупреждений: **{len(warnings)}**.\n\n"
             + (f"Timeweb SHA: {deployed_revision[:12] or 'unknown'}; GitHub SHA: {expected_revision[:12] or 'not supplied'}.\n\n")
             + (f"GitHub Pages control (not Timeweb): {mirror_probe.get('http', 'no HTTP result')}; "
-               f"49-URL match to main: {mirror_probe.get('matches_repo_sitemap', 'unknown')}. "
+               f"Sitemap match to current GitHub main: {mirror_probe.get('matches_repo_sitemap', 'unknown')}. "
                "This is not evidence of Googlebot/YandexBot access.\n\n" if mirror_probe["checked"] else "")
             + ("\n".join("- ❌ " + msg[:220] for msg in errors[:15]) if errors else "✅ Критичных ошибок не обнаружено.")
             + ("\n\n" + "\n".join("- ⚠️ " + msg[:220] for msg in warnings[:10]) if warnings else ""))
