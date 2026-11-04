@@ -30,7 +30,7 @@ jobs:
           python3 examples/iec61131-3-linear-scale/reference_cases.py
           python3 -m unittest discover -s examples/fat-io-csv-review -p 'test_*.py'
           python3 scripts/build_timeweb_site.py
-      - name: Validate 49 URL sitemap, V6 service additions, marking and AI pages
+      - name: Validate 50 URL sitemap, V6 service additions, marking and AI pages
         shell: bash
         run: |
           python3 - <<'PY'
@@ -47,7 +47,7 @@ jobs:
           root = ET.parse("sitemap.xml")
           entries = root.findall(".//s:url", ns)
           urls = [e.findtext("s:loc", namespaces=ns) for e in entries]
-          assert len(urls) == 49 and len(urls) == len(set(urls)), "Sitemap must contain exactly 49 unique URLs"
+          assert len(urls) == 50 and len(urls) == len(set(urls)), "Sitemap must contain exactly 50 unique URLs"
           assert "https://dlvautomation.ru/uslugi/" in urls, "Service catalog missing"
           for folder in folders:
               path = Path(folder) / "index.html"
@@ -101,7 +101,7 @@ jobs:
           feed = ET.parse("feed.xml").getroot()
           assert feed.tag == "rss" and feed.get("version") == "2.0"
           rss_items = feed.findall("./channel/item")
-          assert len(rss_items) == 11, "Expected 11 original RSS article summaries"
+          assert len(rss_items) == 12, "Expected 12 original RSS article summaries"
           rss_links = [node.findtext("link") for node in rss_items]
           assert len(set(rss_links)) == len(rss_links) and set(rss_links).issubset(set(urls))
           assert 'href="/feed.xml"' in Path("index.html").read_text(encoding="utf-8")
@@ -170,7 +170,8 @@ jobs:
               assert len(re.findall(r"<div\b", html)) == html.count("</div>"), page
               assert html.count('application/ld+json') >= 1, page
               assert f'href="/{slug}/"' in home and f'href="/{slug}/"' in catalog, page
-              assert "2026-10-25" == next(e.findtext("s:lastmod", namespaces=ns)
+              expected_date = "2026-11-04" if slug == "ii-na-proizvodstve" else "2026-10-25"
+              assert expected_date == next(e.findtext("s:lastmod", namespaces=ns)
                          for e in entries if e.findtext("s:loc", namespaces=ns) == canonical), slug
               for link in re.findall(r'href="(/[^"#?]+/)"', html):
                   target = Path(link.lstrip("/")) / "index.html" if link != "/" else Path("index.html")
@@ -182,5 +183,20 @@ jobs:
           assert "2026-10-25" == next(e.findtext("s:lastmod", namespaces=ns)
                       for e in entries if e.findtext("s:loc", namespaces=ns) ==
                       f"https://dlvautomation.ru/{marking}/")
-          print("PASS: 49 URLs, V6 service cards, 3 scoped pages, marking, portfolio and calculator")
+          # Industrial AI news article: one original page, sourced 2026 claims and
+          # a crawl path from the blog hub and existing AI commercial service.
+          ai_story = Path("blog/ii-na-proizvodstve-2026/index.html")
+          ai_html = ai_story.read_text(encoding="utf-8")
+          ai_url = "https://dlvautomation.ru/blog/ii-na-proizvodstve-2026/"
+          assert ai_url in urls, "AI analysis missing from sitemap"
+          assert f'rel="canonical" href="{ai_url}"' in ai_html, "AI article canonical"
+          assert ai_html.count("<h1>") == 1, "AI article must have one H1"
+          assert '"datePublished":"2026-11-04"' in ai_html, "AI publication date"
+          assert "press.siemens.com/global/en/pressrelease/siemens-partners-nvidia" in ai_html, "Siemens source"
+          assert "rockwellautomation.com" in ai_html and "www.se.com" in ai_html, "OEM sources"
+          assert "не заявляем как завершённый кейс" in ai_html, "Unverified AI projects claimed"
+          assert 'href="/blog/ii-na-proizvodstve-2026/"' in Path("blog/index.html").read_text(encoding="utf-8"), "Blog index lacks AI article"
+          assert 'href="/blog/ii-na-proizvodstve-2026/"' in Path("ii-na-proizvodstve/index.html").read_text(encoding="utf-8"), "AI service lacks article link"
+          assert any(node.findtext("link") == ai_url for node in rss_items), "RSS lacks AI analysis"
+          print("PASS: 50 URLs, V6 service cards, 3 scoped pages, marking, portfolio and calculator")
           PY
