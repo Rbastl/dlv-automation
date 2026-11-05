@@ -56,11 +56,27 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Restore last public competitor snapshot
+        uses: actions/cache/restore@v4
+        with:
+          path: seo-history/competitors.json
+          key: dlv-public-competitors-${{ github.run_id }}
+          restore-keys: |
+            dlv-public-competitors-
       - name: Weekly competitor check
         run: python scripts/seo_monitor.py --competitors
         env:
           GH_TOKEN: ${{ github.token }}
-      - name: Save public competitor baseline
+      - name: Stage next public baseline
+        run: |
+          mkdir -p seo-history
+          cp seo-reports/competitors.json seo-history/competitors.json
+      - name: Cache next public baseline
+        uses: actions/cache/save@v4
+        with:
+          path: seo-history/competitors.json
+          key: dlv-public-competitors-${{ github.run_id }}
+      - name: Archive public competitor report
         uses: actions/upload-artifact@v4
         with:
           name: dlv-public-competitors
