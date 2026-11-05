@@ -271,7 +271,20 @@ def audit_site():
 
 
 def previous_public_snapshot():
-    """Try last workflow artifact; missing history must not block monitoring."""
+    """Prefer a restored public cache, fall back to old Actions artifact.
+
+    Missing history does not block monitoring, and never implies no changes.
+    """
+    cached = Path("seo-history/competitors.json")
+    if cached.is_file():
+        try:
+            rows = json.loads(cached.read_text(encoding="utf-8")).get("pages", [])
+            old = {row["url"]: row for row in rows if isinstance(row, dict) and row.get("url")}
+            if old:
+                print(f"Public competitor baseline restored: {len(old)} URLs")
+                return old
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            print("Restored public competitor baseline invalid:", type(exc).__name__)
     token = os.getenv("GH_TOKEN")
     repository = os.getenv("GITHUB_REPOSITORY")
     if not token or not repository:
@@ -349,11 +362,16 @@ def audit_competitors():
             skipped.append(item["name"] + " — " + row["note"][:90])
         records.append(row)
         time.sleep(1)
-    report = {"checked_at_utc": datetime.now(timezone.utc).isoformat(), "pages": records}
+    report = {"checked_at_utc": datetime.now(timezone.utc).isoformat(),
+              "baseline_pages": len(old), "changed_fields": len(changed), "pages": records}
     json_save(ROOT / "competitors.json", report)
+    comparison = ("\n".join("- " + x for x in changed) if changed else
+                  ("В проверенных полях нет изменений относительно предыдущего среза."
+                   if old else "Первый доступный срез: нет базы для сравнения изменений."))
     msg = ("## DLV Automation · еженедельный срез конкурентов\n\n"
            f"Обработано **{sum(p['status']=='ok' for p in records)}** из **{len(records)}** сайтов.\n\n"
-           + ("\n".join("- " + x for x in changed) if changed else "Изменений по сравнению с предыдущим доступным срезом не обнаружено или предыдущего среза нет.")
+           f"Предыдущая база: **{len(old)}** URL.\n\n"
+           + comparison
            + ("\n\nНедоступные/пропущенные:\n" + "\n".join("- " + s for s in skipped) if skipped else ""))
     step_summary(msg)
     return 0  # third-party blocks are not failures of the DLV website
