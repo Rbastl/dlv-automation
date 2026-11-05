@@ -19,8 +19,10 @@ if ! command -v git >/dev/null 2>&1 || ! command -v rsync >/dev/null 2>&1; then
   exit 1
 fi
 if ! mkdir "$LOCK" 2>/dev/null; then
-  echo "Another DLV sync is running (or an old lock exists); skipping."
-  exit 0
+  # A stale lock must not masquerade as a successful Cron publication.
+  # Never delete a lock until the owner has confirmed no sync is running.
+  echo "ERROR: DLV publish lock exists; check active sync before clearing a stale lock." >&2
+  exit 2
 fi
 trap 'if [ -n "${TMP:-}" ]; then rm -rf "$TMP"; fi; rmdir "$LOCK" 2>/dev/null || true' EXIT HUP INT TERM
 
@@ -81,7 +83,9 @@ else
 fi
 
 if [ -f "$LAST_REV" ] && [ -f "$SITE/index.html" ] &&
-   [ "$(cat "$LAST_REV")" = "$NEW_REV" ]; then
+   [ -f "$SITE/sitemap.xml" ] && [ -f "$SITE/dlv-deploy-revision.txt" ] &&
+   [ "$(cat "$LAST_REV")" = "$NEW_REV" ] &&
+   [ "$(cat "$SITE/dlv-deploy-revision.txt")" = "$NEW_REV" ]; then
   echo "DLV: no new GitHub commit, site unchanged."
   exit 0
 fi
