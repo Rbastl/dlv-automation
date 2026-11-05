@@ -23,12 +23,17 @@ class Tags(HTMLParser):
         self.robots = None
         self.canonical = []
         self.stylesheets = []
+        self.descriptions = []
+        self.html_lang = None
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
         self.tags[tag] += 1
         if "id" in a: self.ids.append(a["id"])
+        if tag == "html": self.html_lang = a.get("lang")
         if tag == "a" and "href" in a: self.hrefs.append(a["href"])
         if tag == "meta" and a.get("name", "").lower() == "robots": self.robots = a.get("content")
+        if tag == "meta" and a.get("name", "").lower() == "description":
+            self.descriptions.append(a.get("content", ""))
         if tag == "link":
             if a.get("rel") == "canonical": self.canonical.append(a.get("href"))
             if a.get("rel") == "stylesheet": self.stylesheets.append(a.get("href"))
@@ -54,6 +59,21 @@ def main():
         repeated = [x for x, n in Counter(parser.ids).items() if n > 1]
         if repeated: raise AssertionError(f"{p}: repeated HTML IDs {repeated}")
         data[p.as_posix()] = (parser, content)
+        # The 2 legacy entrypoints deliberately redirect; only the other 50
+        # documents must appear in sitemap with unique canonical SEO metadata.
+        if p.as_posix() not in {"razrabotka-scada/index.html", "en/scada-hmi-development/index.html"}:
+            local = "/" if p.as_posix() == "index.html" else "/" + p.parent.as_posix() + "/"
+            expected_canonical = "https://dlvautomation.ru" + local
+            if parser.tags["title"] != 1:
+                raise AssertionError(f"{p}: expected one HTML title")
+            if len(parser.descriptions) != 1 or not parser.descriptions[0].strip():
+                raise AssertionError(f"{p}: missing or duplicate meta description")
+            if parser.canonical != [expected_canonical]:
+                raise AssertionError(f"{p}: canonical mismatch {parser.canonical!r}")
+            if parser.html_lang != ("en" if p.parts[0] == "en" else "ru"):
+                raise AssertionError(f"{p}: missing/incorrect html lang {parser.html_lang!r}")
+            if "noindex" in (parser.robots or "").lower():
+                raise AssertionError(f"{p}: noindex page in the public sitemap")
         if p.as_posix() not in SHELL_EXCEPTIONS:
             assert 'class="dlv-site-header"' in content, f"{p}: shared header absent"
             assert 'class="dlv-site-footer"' in content, f"{p}: shared footer absent"
@@ -84,8 +104,15 @@ def main():
     urls = [e.text for e in sitemap.findall(".//s:url/s:loc", ns)]
     if len(urls) != 50 or len(urls) != len(set(urls)):
         raise AssertionError(f"Sitemap expected 50 unique URLs; got {len(urls)}")
+    expected_urls = {
+        "https://dlvautomation.ru" + ("/" if p.as_posix() == "index.html" else "/" + p.parent.as_posix() + "/")
+        for p in paths
+        if p.as_posix() not in {"razrabotka-scada/index.html", "en/scada-hmi-development/index.html"}
+    }
+    if set(urls) != expected_urls:
+        raise AssertionError(f"Sitemap missing={sorted(expected_urls - set(urls))}, extra={sorted(set(urls) - expected_urls)}")
     for uri in urls:
-        path = local_path(urlsplit(uri).path.replace("https://dlvautomation.ru",""))
+        path = local_path(urlsplit(uri).path)
         if not path or not (ROOT/path).is_file(): raise AssertionError(f"Missing sitemap page: {uri}")
     feed = ET.parse("feed.xml")
     fr = feed.getroot()
@@ -111,6 +138,7 @@ def main():
         assert "id=\"experience\"" not in home, f"{file}: unverified statistics not removed"
     assert "sitemap.xml" in (ROOT/"robots.txt").read_text(encoding="utf-8").lower()
     print(f"PASS: {len(paths)} entry files, {len(urls)} sitemap URLs, {found} local page links")
+    print("PASS: canonical/title/description/lang/indexability match sitemap; no orphan public entries")
     print("PASS: no broken local hrefs, shared shells, unique H1/IDs, no public preview notes or draft counters")
 
 if __name__ == "__main__":
