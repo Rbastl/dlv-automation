@@ -181,9 +181,13 @@ jobs:
           mark_html = (Path(marking) / "index.html").read_text(encoding="utf-8")
           assert "Честный ЗНАК" in mark_html and "Data Matrix" in mark_html
           assert f'href="/{marking}/"' in home and f'href="/{marking}/"' in catalog
-          assert "2026-10-25" == next(e.findtext("s:lastmod", namespaces=ns)
+          assert 'id="markirovka-moloka-partii-2026"' in mark_html, "Dairy marking readiness section missing"
+          assert "1 ноября 2026 года" in mark_html and "1 марта 2027 года" in mark_html, "Batch tracking dates missing"
+          assert "markirovka.ru/knowledge/tovarnye-gruppy/molochnaya-produkciya/" in mark_html, "Official marking instructions missing"
+          assert "markirovka-moloka-partii-2026" in Path("avtomatizaciya-molochnogo-proizvodstva/index.html").read_text(encoding="utf-8"), "Dairy service lacks marking reference"
+          assert next(e.findtext("s:lastmod", namespaces=ns)
                       for e in entries if e.findtext("s:loc", namespaces=ns) ==
-                      f"https://dlvautomation.ru/{marking}/")
+                      f"https://dlvautomation.ru/{marking}/") >= "2026-11-05"
           # Industrial AI news article: one original page, sourced 2026 claims and
           # a crawl path from the blog hub and existing AI commercial service.
           ai_story = Path("blog/ii-na-proizvodstve-2026/index.html")
