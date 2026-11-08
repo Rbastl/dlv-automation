@@ -9,7 +9,7 @@
 <meta property="og:title" content="4–20 мА и 0–10 В: калькулятор датчика, ПЛК и шкалы измерения">
 <meta property="og:description" content="Калькулятор 4–20 мА и 0–10 В: перевод тока/напряжения в давление, уровень и температуру, пересчёт raw АЦП ПЛК, пять контрольных точек и CSV-протокол.">
 <meta property="og:url" content="https://dlvautomation.ru/blog/4-20ma-plk-kalkulyator/">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"4–20 мА и 0–10 В: калькулятор датчика, ПЛК и шкалы измерения","description":"Калькулятор 4–20 мА и 0–10 В: перевод тока/напряжения в давление, уровень и температуру, пересчёт raw АЦП ПЛК, пять контрольных точек и CSV-протокол.","datePublished":"2026-10-27","dateModified":"2026-10-27","author":{"@type":"Organization","name":"DLV Automation"},"publisher":{"@type":"Organization","name":"DLV Automation","url":"https://dlvautomation.ru/"},"mainEntityOfPage":"https://dlvautomation.ru/blog/4-20ma-plk-kalkulyator/"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"4–20 мА и 0–10 В: калькулятор датчика, ПЛК и шкалы измерения","description":"Калькулятор 4–20 мА и 0–10 В: перевод тока/напряжения в давление, уровень и температуру, пересчёт raw АЦП ПЛК, пять контрольных точек и CSV-протокол.","datePublished":"2026-10-27","dateModified":"2026-11-08","author":{"@type":"Organization","name":"DLV Automation"},"publisher":{"@type":"Organization","name":"DLV Automation","url":"https://dlvautomation.ru/"},"mainEntityOfPage":"https://dlvautomation.ru/blog/4-20ma-plk-kalkulyator/"}</script>
 <style>
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -112,6 +112,19 @@ body.dlv-inner .tool-wrap{width:min(1020px,calc(100% - 48px));margin-inline:auto
 <p>Если из документации известны raw-значения <code>RAW_L</code> и <code>RAW_H</code>, соответствующие 4 и 20 мА (или 0 и 10 В), то при линейном преобразовании:</p>
 <div class="tool-callout"><p><strong>PV = LRV + (RAW − RAW_L) × (URV − LRV) / (RAW_H − RAW_L)</strong></p></div>
 <p>Заполните raw-поля в калькуляторе — появится результат по текущему коду и ожидаемые отсчёты для пяти контрольных точек. Не используйте значения raw «по памяти»: сначала сверяйте паспорт конкретного аналогового модуля, настройки диапазона и диагностические коды.</p><p>Для программистов ПЛК опубликован <a href="https://github.com/Rbastl/dlv-automation/tree/main/examples/iec61131-3-linear-scale">учебный пример масштабирования на Structured Text (IEC 61131-3)</a> с обработкой состояния диапазона и отдельной проверкой расчётов. Это пример логики, а не готовый сертифицированный блок и не замена диагностики аналогового модуля.</p>
+<!-- DLV-SEO-SIEMENS-RAW-EXAMPLE-20261108 -->
+<h2 id="siemens-4-20ma-raw-example">Siemens S7-1500: пример RAW 0…27648 для 4–20 мА</h2>
+<p>В качестве проверяемого примера возьмём <strong>канал AI 8xU/I HF (6ES7531-7NF00-0AB0), настроенный на диапазон 4–20 мА</strong>. В таблице представления аналоговых значений Siemens нижней рабочей точке 4 мА соответствует <code>RAW = 0</code>, верхней 20 мА — <code>RAW = 27648</code>. Для датчика давления 0–10 бар формула масштабирования будет <code>давление = RAW × 10 / 27648</code> в пределах номинального диапазона.</p>
+<div class="tool-tablescroll"><table><thead><tr><th>Ток, мА</th><th>RAW Siemens (пример)</th><th>Давление 0–10 бар</th><th>Проверка</th></tr></thead><tbody>
+<tr><td>4</td><td>0</td><td>0,0 бар</td><td>0 % диапазона</td></tr>
+<tr><td>8</td><td>6912</td><td>2,5 бар</td><td>25 % диапазона</td></tr>
+<tr><td>12</td><td>13824</td><td>5,0 бар</td><td>50 % диапазона</td></tr>
+<tr><td>16</td><td>20736</td><td>7,5 бар</td><td>75 % диапазона</td></tr>
+<tr><td>20</td><td>27648</td><td>10,0 бар</td><td>100 % диапазона</td></tr>
+</tbody></table></div>
+<p><strong>Это не универсальная таблица для всех модулей Siemens.</strong> Уточняйте модель AI, выбранный measuring range и фактический формат raw. Для диапазона 0–20 мА интерпретация того же raw будет другой. Выход за номинальный диапазон, обрыв петли и ошибки канала нужно определять по диагностике модуля; нельзя просто считать любой RAW ниже нуля «отрицательным давлением» и продолжать управление.</p>
+<p>При разработке в TIA Portal функции <code>NORM_X</code> и <code>SCALE_X</code> помогают перевести поддерживаемый номинальный диапазон в инженерные единицы, но проверка достоверности сигнала и обработка диагностических кодов остаются отдельными задачами. Сохраните пять контрольных точек в CSV калькулятора и приложите их к <a href="/blog/fat-io-testy-pnr-asu-tp/">протоколу FAT/I/O</a> для согласованной безопасной проверки.</p>
+<p>Первоисточники: <a href="https://docs.tia.siemens.cloud/r/simatic_s7_1500_et_200mp_manual_collection_dede_21/geratespezifische-informationen/analogmodule/analogeingabemodule/analogeingabemodul-ai-8xu/i-hf-6es7531-7nf00-0ab0/analogwertdarstellung/analogwertdarstellung-in-strommessbereichen" target="_blank" rel="noopener noreferrer">Siemens AI 8xU/I HF — таблица представления 4–20 мА</a>; <a href="https://docs.tia.siemens.cloud/r/simatic_s7_1200_manual_collection_enus_20/plc-concepts/processing-of-analog-values?contentId=Uh75cJNmBuTYC9WYcZNvaQ" target="_blank" rel="noopener noreferrer">Siemens — обработка аналоговых значений и NORM_X/SCALE_X</a>.</p>
 <h2>Как провести проверку 4–20 мА перед пусконаладкой</h2>
 <ol><li>Зафиксируйте тег AI, прибор, заводскую шкалу и настройки диапазона в модуле ПЛК.</li>
 <li>На согласованном безопасном стенде или штатным калибратором подайте 4, 8, 12, 16 и 20 мА (не вмешиваясь в опасный технологический контур без наряда и процедуры).</li>
