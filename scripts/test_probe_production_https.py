@@ -26,6 +26,42 @@ class TimewebProbeTests(unittest.TestCase):
         self.assertEqual(p.error_kind(ConnectionResetError()), "connection_reset")
         self.assertEqual(p.error_kind(OSError("generic")), "network_os_error")
 
+    def test_http_canonical_redirect_classification(self):
+        self.assertEqual(
+            p.http_redirect_result(301, "https://dlvautomation.ru/", "/"),
+            "permanent_https_canonical",
+        )
+        self.assertEqual(
+            p.http_redirect_result(308,
+                "https://dlvautomation.ru/en/control-system-modernization/",
+                "/en/control-system-modernization/"),
+            "permanent_https_canonical",
+        )
+        self.assertEqual(
+            p.http_redirect_result(200, None, "/"), "http_200_unredirected",
+        )
+        self.assertEqual(
+            p.http_redirect_result(301, "http://dlvautomation.ru/", "/"),
+            "redirect_to_different_target",
+        )
+        self.assertEqual(
+            p.http_redirect_result(302, "https://dlvautomation.ru/", "/"),
+            "temporary_or_other_status",
+        )
+        self.assertEqual(
+            p.http_redirect_result(301, "https://other.example/", "/"),
+            "redirect_to_different_target",
+        )
+
+    def test_http_location_parser(self):
+        self.assertEqual(
+            p.header_location(b"HTTP/1.1 301 Moved Permanently\r\n"
+                              b"Content-Type: text/html\r\n"
+                              b"Location: https://dlvautomation.ru/\r\n\r\n"),
+            "https://dlvautomation.ru/",
+        )
+        self.assertIsNone(p.header_location(b"HTTP/1.1 200 OK\r\n\r\n"))
+
     def test_deduplicate_ipv4_ipv6(self):
         responses = [
             (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("192.0.2.1", 443)),
