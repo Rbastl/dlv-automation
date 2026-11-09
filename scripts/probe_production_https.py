@@ -14,6 +14,7 @@ import re
 import socket
 import ssl
 import time
+from urllib.parse import urlsplit
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -21,6 +22,9 @@ HOST = "dlvautomation.ru"
 PORT = 443
 TIMEOUT_SECONDS = 6
 PATHS = ("/robots.txt", "/dlv-deploy-revision.txt")
+# Google Search Console has displayed both HTTP and HTTPS URL variants.
+# Read-only checks; never change redirects, DNS or the webserver.
+CANONICAL_PATHS = ("/", "/en/control-system-modernization/")
 OUT = Path("seo-reports/https-layer.json")
 
 
@@ -47,6 +51,73 @@ def status_code_from_bytes(data: bytes) -> int | None:
     head = data.split(b"\r\n", 1)[0]
     match = re.fullmatch(rb"HTTP/1\.[01] ([1-5][0-9]{2})[ -~]*", head)
     return int(match.group(1)) if match else None
+
+
+def header_location(data: bytes) -> str | None:
+    """Extract only the HTTP Location header, without following arbitrary links."""
+    header = data.split(b"\r\n\r\n", 1)[0].decode("iso-8859-1", errors="replace")
+    for line in header.split("\r\n")[1:]:
+        name, separator, value = line.partition(":")
+        if separator and name.strip().lower() == "location":
+            return value.strip()
+    return None
+
+
+def http_redirect_result(status: int | None, location: str | None, path: str) -> str:
+    """A permanent redirect must point to the exact HTTPS canonical URL."""
+    if status == 200:
+        return "http_200_unredirected"
+    if status not in (301, 308):
+        return "temporary_or_other_status" if status is not None else "no_http_status"
+    if not location:
+        return "redirect_without_location"
+    target = urlsplit(location)
+    if (target.scheme.lower() == "https"
+            and target.hostname == HOST and target.port in (None, 443)
+            and target.path.rstrip("/") == path.rstrip("/")
+            and not target.query and not target.fragment):
+        return "permanent_https_canonical"
+    return "redirect_to_different_target"
+
+
+def probe_http_redirect(endpoint: dict, path: str) -> dict:
+    """One GET against our own HTTP/80 virtual host; no body is stored."""
+    item = {
+        "family": endpoint["family"], "ip": endpoint["ip"],
+        "path": path, "port": 80, "status": "not_started",
+        "result": "not_started",
+    }
+    start = time.monotonic()
+    try:
+        original = endpoint["_address"]
+        address = (original[0], 80, *original[2:])
+        with socket.socket(endpoint["_family"], socket.SOCK_STREAM) as sock:
+            sock.settimeout(TIMEOUT_SECONDS)
+            sock.connect(address)
+            request = (
+                f"GET {path} HTTP/1.1\r\n"
+                f"Host: {HOST}\r\n"
+                "User-Agent: DLVAutomationCanonicalProbe/1.0\r\n"
+                "Accept: text/plain,*/*\r\n"
+                "Connection: close\r\n\r\n"
+            )
+            sock.sendall(request.encode("ascii"))
+            data = b""
+            while len(data) < 8192 and b"\r\n\r\n" not in data:
+                piece = sock.recv(min(2048, 8192 - len(data)))
+                if not piece:
+                    break
+                data += piece
+            code = status_code_from_bytes(data)
+            location = header_location(data)
+            item["status"] = code
+            item["result"] = http_redirect_result(code, location, path)
+            # Never log arbitrary remote URL contents or response bodies.
+            item["location_is_expected_https"] = item["result"] == "permanent_https_canonical"
+    except Exception as exc:
+        item["result"] = "network_" + error_kind(exc)
+    item["elapsed_ms"] = round((time.monotonic() - start) * 1000)
+    return item
 
 
 def get_ip_endpoints() -> list[dict]:
@@ -127,6 +198,7 @@ def run() -> dict:
         },
         "dns": [],
         "checks": [],
+        "http_redirect_checks": [],
     }
     try:
         endpoints = get_ip_endpoints()
@@ -139,6 +211,8 @@ def run() -> dict:
     for endpoint in endpoints:
         for path in PATHS:
             report["checks"].append(probe(endpoint, path))
+        for path in CANONICAL_PATHS:
+            report["http_redirect_checks"].append(probe_http_redirect(endpoint, path))
     return report
 
 
@@ -156,7 +230,16 @@ def main() -> int:
             "HTTP=" + str(item.get("http_status", item["http"])),
             "elapsed_ms=" + str(item.get("response_ms", item.get("elapsed_ms", ""))),
         )
-    # Do not replace the existing full site audit's true failure status.
+    for item in report["http_redirect_checks"]:
+        print(
+            "DLV HTTP canonical:", item["family"], item["path"],
+            "HTTP=" + str(item["status"]),
+            "result=" + item["result"],
+            "elapsed_ms=" + str(item["elapsed_ms"]),
+        )
+    # HTTP/80 from one runner is diagnostic only. Neither a failure here nor
+    # a successful 443 probe establishes Googlebot access or a redirect bug.
+    # Do not change the existing site's audit exit status.
     return 0
 
 
