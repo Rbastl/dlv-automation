@@ -48,7 +48,7 @@ def sitemap_urls():
 
 
 def request_yandex(method, path, headers, label, params=None, payload=None,
-                   optional=False, conflict_ok=False):
+                   optional=False, conflict_ok=False, availability=None):
     import requests
 
     url = BASE + path
@@ -74,14 +74,19 @@ def request_yandex(method, path, headers, label, params=None, payload=None,
             except (ValueError, TypeError, AttributeError):
                 code = ""
             if optional and resp.status_code == 404 and code in OPTIONAL_CODES:
+                if availability is not None:
+                    availability[label] = code
                 return None
             # Never print response content, OAuth token, request URL, or private queries.
             raise RuntimeError("Yandex " + label + ": HTTP " + str(resp.status_code)
                                + (" (" + code + ")" if code else ""))
         try:
-            return resp.json()
+            result = resp.json()
         except ValueError:
             raise RuntimeError("Yandex " + label + ": invalid JSON") from None
+        if availability is not None:
+            availability[label] = "OK"
+        return result
     raise RuntimeError("Yandex " + label + ": retry limit")
 
 
@@ -131,18 +136,21 @@ def metric_series(data, name, start, end):
             and isinstance(row.get("value"), (int, float))}
 
 
-def site_totals(base, headers, start, end):
+def site_totals(base, headers, start, end, availability=None):
     indicators = ["TOTAL_SHOWS", "TOTAL_CLICKS", "AVG_SHOW_POSITION"]
     params = [("query_indicator", value) for value in indicators]
     params += [("date_from", start), ("date_to", end)]
     data = request_yandex("GET", base + "/search-queries/all/history",
-                          headers, "total search history", params=params, optional=True)
+                          headers, "total search history", params=params, optional=True,
+                          availability=availability)
     if data is None:
         return None
     shows = metric_series(data, "TOTAL_SHOWS", start, end)
     clicks = metric_series(data, "TOTAL_CLICKS", start, end)
     positions = metric_series(data, "AVG_SHOW_POSITION", start, end)
     if not shows and not clicks:
+        if availability is not None:
+            availability["total search history"] = "EMPTY"
         return None
     shown = round(sum(shows.values()), 3) if shows else ""
     clicked = round(sum(clicks.values()), 3) if clicks else ""
@@ -152,14 +160,15 @@ def site_totals(base, headers, start, end):
     return [start, end, shown, clicked, avg, days]
 
 
-def popular_queries(base, headers, start, end):
+def popular_queries(base, headers, start, end, availability=None):
     params = [("order_by", "TOTAL_SHOWS"), ("limit", "500"),
               ("date_from", start), ("date_to", end)]
     for metric in ("TOTAL_SHOWS", "TOTAL_CLICKS", "AVG_SHOW_POSITION",
                    "AVG_CLICK_POSITION"):
         params.append(("query_indicator", metric))
     data = request_yandex("GET", base + "/search-queries/popular",
-                          headers, "popular queries", params=params, optional=True)
+                          headers, "popular queries", params=params, optional=True,
+                          availability=availability)
     if data is None:
         return []
     result = []
@@ -172,22 +181,48 @@ def popular_queries(base, headers, start, end):
                        metrics.get("TOTAL_SHOWS", ""), metrics.get("TOTAL_CLICKS", ""),
                        metrics.get("AVG_SHOW_POSITION", ""),
                        metrics.get("AVG_CLICK_POSITION", "")])
+    if not result and availability is not None:
+        availability["popular queries"] = "EMPTY"
     return result
 
 
-def indexed_pages(base, headers, start, end):
+def indexed_pages(base, headers, start, end, availability=None):
     data = request_yandex("GET", base + "/search-urls/in-search/history",
                           headers, "pages in search", params={
                               "date_from": start, "date_to": end,
-                          }, optional=True)
+                          }, optional=True, availability=availability)
     if data is None:
         return ""
     records = [row for row in data.get("history", [])
                if isinstance(row.get("value"), (int, float))]
     if not records:
+        if availability is not None:
+            availability["pages in search"] = "EMPTY"
         return ""
     last = max(records, key=lambda x: x.get("date", ""))
     return int(last["value"])
+
+
+def availability_comment(availability):
+    """Keep API unavailability distinct from measured zero in the private sheet.
+
+    Documented 404 reasons: yandex.ru/dev/webmaster/doc/ru/reference/
+    hosts-indexing-insearch-history. An HTTP 200 with no records is a
+    separate observation and does not establish zero indexed pages.
+    """
+    descriptions = {
+        "OK": "данные получены",
+        "STORED": "период уже сохранён, повторный запрос не выполнялся",
+        "EMPTY": "HTTP 200, записей за период нет; это не измеренный ноль",
+        "HOST_NOT_INDEXED": "API сообщает: сайт ещё не проиндексирован (HOST_NOT_INDEXED)",
+        "HOST_NOT_LOADED": "API сообщает: данные о сайте ещё не загружены (HOST_NOT_LOADED)",
+    }
+    return "; ".join(
+        label + ": " + descriptions[availability[key]]
+        for key, label in (("pages in search", "Индекс"),
+                           ("total search history", "Сводка"),
+                           ("popular queries", "Запросы"))
+    )
 
 
 def append_sheet(session, sheet_id, tab, values):
@@ -298,19 +333,24 @@ def main():
         period_start = period_end - timedelta(days=6)
         start, end = period_start.isoformat(), period_end.isoformat()
         stamp = now.isoformat(timespec="seconds")
+        availability = {}
         if not already_collected(google, sheet_id, "Яндекс — сводка", start, end):
-            summary = site_totals(host, headers, start, end)
+            summary = site_totals(host, headers, start, end, availability)
             if summary is not None:
                 append_sheet(google, sheet_id, "Яндекс — сводка",
                              [summary + [stamp]])
+        else:
+            availability["total search history"] = "STORED"
         if not already_collected(google, sheet_id, "Яндекс", start, end):
-            queries = popular_queries(host, headers, start, end)
+            queries = popular_queries(host, headers, start, end, availability)
             append_sheet(google, sheet_id, "Яндекс",
                          [row + [stamp] for row in queries])
+        else:
+            availability["popular queries"] = "STORED"
         pages = indexed_pages(host, headers,
                               (now - timedelta(days=21)).date().isoformat(),
-                              now.date().isoformat())
-        condition = "OK" if pages != "" else "Данные об индексе ещё не поступили"
+                              now.date().isoformat(), availability)
+        condition = availability_comment(availability)
         if not primary:
             condition += "; главное зеркало отличается"
         append_sheet(google, sheet_id, "Яндекс — индексация", [[
@@ -319,9 +359,9 @@ def main():
         maybe_reindex(host, headers, urls)
         report("✅ Яндекс Вебмастер: права на HTTPS-сайт подтверждены, "
                "Sitemap " + sitemap_status + ", URL: **" + str(len(urls)) + "**.")
-        report("Поисковые запросы, сводка и история индекса сохранены в закрытую "
-               "Google-таблицу, если Яндекс уже предоставил данные. "
-               "Google собирается независимо.")
+        report("Доступные данные и отдельные причины отсутствия индекса, сводки "
+               "и запросов записаны в закрытую Google-таблицу. "
+               "Пустой ответ не заменяется нулём. Google собирается независимо.")
         return 0
     except Exception as exc:
         # Only carefully constructed messages; never expose credentials, URLs with tokens,
