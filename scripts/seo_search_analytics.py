@@ -10,10 +10,7 @@ import sys
 import urllib.parse
 from datetime import date, datetime, timedelta, timezone
 
-import requests
 import time
-from google.oauth2 import service_account
-from google.auth.transport.requests import AuthorizedSession
 
 GOOGLE_SCOPES = [
     "https://www.googleapis.com/auth/webmasters.readonly",
@@ -25,6 +22,8 @@ YANDEX_TOKEN = os.getenv("YANDEX_WEBMASTER_TOKEN", "").strip()
 SITE_HOST = "dlvautomation.ru"
 SHEETS = "https://sheets.googleapis.com/v4/spreadsheets/"
 WEBMASTER = "https://api.webmaster.yandex.net/v4"
+PAGE_REPORT_LIMIT = 1000
+PAGE_REPAIR_WINDOWS = 3
 
 
 def summary(text):
@@ -64,11 +63,87 @@ def append_private(session, tab, rows):
 
 
 
+def owned_page_url(url):
+    """Keep the exact GSC URI, including HTTP/www, for our own hosts only."""
+    if not isinstance(url, str):
+        return False
+    try:
+        parsed = urllib.parse.urlsplit(url)
+        return (parsed.scheme in ("http", "https")
+                and parsed.hostname in (SITE_HOST, "www." + SITE_HOST)
+                and parsed.username is None and parsed.password is None)
+    except ValueError:
+        return False
+
+
+def stored_page_keys(session):
+    """Read existing period/URI identities without logging private rows."""
+    url = f"{SHEETS}{SHEET_ID}/values/{tab_range('Страницы', 'A2:C')}"
+    data = valid_response(session.get(url, timeout=25), "Page report identities")
+    return {tuple(row[:3]) for row in data.get("values", [])
+            if len(row) >= 3 and owned_page_url(row[2])}
+
+
+def page_periods_to_repair(period, existing):
+    """Bound recovery to three recent stored weeks plus the current week."""
+    first, last = map(date.fromisoformat, period)
+    if last - first != timedelta(days=6):
+        raise ValueError("Page report requires a complete seven-day window")
+    recent = set()
+    for start, end, _ in existing:
+        try:
+            left, right = date.fromisoformat(start), date.fromisoformat(end)
+        except (TypeError, ValueError):
+            continue
+        if (right - left == timedelta(days=6)
+                and first - timedelta(days=30) <= left
+                and right <= last and (start, end) != tuple(period)):
+            recent.add((start, end))
+    return [tuple(period)] + sorted(recent, reverse=True)[:PAGE_REPAIR_WINDOWS]
+
+
+def reconcile_google_pages(session, endpoint, period, stamp, existing):
+    """Append missing URIs only; never rewrite or merge historical URI rows."""
+    rows, seen, offset = [], set(), 0
+    while True:
+        response = valid_response(session.post(endpoint, json={
+            "startDate": period[0], "endDate": period[1],
+            "dimensions": ["page"], "type": "web",
+            "rowLimit": PAGE_REPORT_LIMIT, "startRow": offset,
+        }, timeout=35), "Search Console pages report")
+        batch = response.get("rows", [])
+        for line in batch:
+            keys = line.get("keys", [])
+            if not keys or not owned_page_url(keys[0]):
+                continue
+            url = keys[0]
+            identity = (period[0], period[1], url)
+            if identity in existing or url in seen:
+                continue
+            seen.add(url)
+            rows.append([
+                period[0], period[1], url,
+                line.get("clicks", 0), line.get("impressions", 0),
+                line.get("ctr", 0), line.get("position", 0), stamp
+            ])
+        if len(batch) < PAGE_REPORT_LIMIT:
+            break
+        offset += len(batch)
+    # Complete all API pages before writing: a later-page error must not leave
+    # a partially imported period that the next run would skip.
+    if append_private(session, "Страницы", rows):
+        existing.update((row[0], row[1], row[2]) for row in rows)
+        summary("Google Search Console: недостающие URL записаны в закрытую вкладку «Страницы».")
+    else:
+        summary("Google Search Console: новых строк по URL нет; существующие данные сохранены.")
+
+
 def google_summary_and_pages(session, endpoint, period, stamp):
     """Store total impressions (including anonymous queries) and page-level KPIs.
 
-    Query+page rows alone can undercount impressions because Search Console
-    anonymizes some search terms. All data remains in the private spreadsheet.
+    Query anonymization and property/page aggregation are different effects.
+    Preserve all owned URI variants; do not force page sums to site totals.
+    All data remains in the private spreadsheet.
     """
     if not already_collected(session, "Сводка", period):
         response = valid_response(session.post(endpoint, json={
@@ -82,25 +157,9 @@ def google_summary_and_pages(session, endpoint, period, stamp):
             metric.get("ctr", 0), metric.get("position", 0), stamp
         ]])
         summary("Google Search Console: суммарные показатели записаны в закрытую вкладку «Сводка».")
-    if not already_collected(session, "Страницы", period):
-        response = valid_response(session.post(endpoint, json={
-            "startDate": period[0], "endDate": period[1],
-            "dimensions": ["page"], "type": "web", "rowLimit": 1000,
-        }, timeout=35), "Search Console pages report")
-        rows = []
-        for line in response.get("rows", []):
-            keys = line.get("keys", [])
-            if not keys or not keys[0].startswith("https://" + SITE_HOST + "/"):
-                continue
-            rows.append([
-                period[0], period[1], keys[0],
-                line.get("clicks", 0), line.get("impressions", 0),
-                line.get("ctr", 0), line.get("position", 0), stamp
-            ])
-        if append_private(session, "Страницы", rows):
-            summary("Google Search Console: отчёт по URL записан в закрытую вкладку «Страницы».")
-        else:
-            summary("Google Search Console: по отдельным URL пока нет доступных данных.")
+    existing = stored_page_keys(session)
+    for window in page_periods_to_repair(period, existing):
+        reconcile_google_pages(session, endpoint, window, stamp, existing)
 
 
 def google_collect(session, start, end, stamp):
@@ -145,6 +204,7 @@ def google_collect(session, start, end, stamp):
 
 def yandex_get(url, context, **kwargs):
     """Retry transient API transport failures; log only safe diagnostic categories."""
+    import requests
     for attempt in range(3):
         try:
             return valid_response(requests.get(url, **kwargs), context)
@@ -227,6 +287,9 @@ def main():
         summary("⚠️ Автовыгрузка пока не активна: в GitHub Secrets отсутствуют Google credential или ID таблицы. Регистрация самого сайта не требуется.")
         return 0
     try:
+        from google.oauth2 import service_account
+        from google.auth.transport.requests import AuthorizedSession
+
         info = json.loads(SA_JSON)
         creds = service_account.Credentials.from_service_account_info(
             info, scopes=GOOGLE_SCOPES)
@@ -257,3 +320,4 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
