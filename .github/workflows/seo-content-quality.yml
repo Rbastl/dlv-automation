@@ -11,6 +11,8 @@ on:
       - "scripts/google_index_audit.py"
       - "scripts/probe_production_https.py"
       - "scripts/test_probe_production_https.py"
+      - "scripts/seo_search_analytics.py"
+      - "scripts/test_seo_search_analytics.py"
       - ".github/workflows/seo-content-quality.yml"
 
 permissions:
@@ -29,6 +31,7 @@ jobs:
           python3 -m py_compile scripts/google_index_audit.py scripts/seo_monitor.py scripts/seo_search_analytics.py scripts/yandex_webmaster_analytics.py scripts/test_yandex_webmaster_analytics.py scripts/probe_production_https.py scripts/test_probe_production_https.py
           python3 -m unittest discover -s scripts -p 'test_yandex_webmaster_analytics.py'
           python3 -m unittest discover -s scripts -p 'test_probe_production_https.py'
+          python3 -m unittest discover -s scripts -p 'test_seo_search_analytics.py'
           python3 examples/iec61131-3-linear-scale/reference_cases.py
           python3 -m unittest discover -s examples/fat-io-csv-review -p 'test_*.py'
           python3 scripts/build_timeweb_site.py
@@ -206,3 +209,4 @@ jobs:
           assert any(node.findtext("link") == ai_url for node in rss_items), "RSS lacks AI analysis"
           print("PASS: 50 URLs, V6 service cards, 3 scoped pages, marking, portfolio and calculator")
           PY
+

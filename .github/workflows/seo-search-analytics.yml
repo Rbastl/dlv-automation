@@ -23,6 +23,12 @@ on:
 permissions:
   contents: read
 
+# Period/URI recovery appends missing rows. Serialize existing collector runs
+# so two simultaneous invocations cannot append the same missing identities.
+concurrency:
+  group: dlv-search-analytics-collector
+  cancel-in-progress: false
+
 jobs:
   google:
     name: Google Search Console to private Google Sheet
@@ -64,3 +70,4 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           YANDEX_WEBMASTER_TOKEN: ${{ secrets.YANDEX_WEBMASTER_TOKEN }}
           DLV_YANDEX_RECRAWL: ${{ github.event_name == 'workflow_dispatch' && inputs.request_reindex && 'true' || 'false' }}
+
