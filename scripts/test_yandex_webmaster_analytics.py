@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Offline regression tests: never contact Yandex or private Google Sheets."""
 import os
+import sys
+from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import yandex_webmaster_analytics as yw
 
@@ -77,6 +79,92 @@ class YandexCollectorTests(unittest.TestCase):
     def test_missing_total_data_is_not_reported_as_zero(self):
         with patch.object(yw, "request_yandex", return_value={"indicators": {}}):
             self.assertIsNone(yw.site_totals("/base", {}, "2026-10-21", "2026-10-22"))
+
+    def test_optional_404_retains_each_documented_reason(self):
+        for code in ("HOST_NOT_INDEXED", "HOST_NOT_LOADED"):
+            with self.subTest(code=code):
+                response = Mock(status_code=404)
+                response.json.return_value = {"error_code": code}
+                requests = SimpleNamespace(
+                    request=Mock(return_value=response),
+                    exceptions=SimpleNamespace(ConnectionError=ConnectionError,
+                                               Timeout=TimeoutError),
+                )
+                status = {}
+                with patch.dict(sys.modules, {"requests": requests}):
+                    result = yw.request_yandex(
+                        "GET", "/base", {}, "pages in search",
+                        optional=True, availability=status)
+                self.assertIsNone(result)
+                self.assertEqual(status, {"pages in search": code})
+                self.assertEqual(requests.request.call_count, 1)
+
+    def test_auth_error_is_not_treated_as_optional_absence(self):
+        response = Mock(status_code=403)
+        response.json.return_value = {"error_code": "INVALID_USER_ID"}
+        requests = SimpleNamespace(
+            request=Mock(return_value=response),
+            exceptions=SimpleNamespace(ConnectionError=ConnectionError,
+                                       Timeout=TimeoutError),
+        )
+        status = {}
+        with patch.dict(sys.modules, {"requests": requests}):
+            with self.assertRaisesRegex(RuntimeError, "HTTP 403"):
+                yw.request_yandex("GET", "/base", {}, "pages in search",
+                                  optional=True, availability=status)
+        self.assertEqual(status, {})
+
+    def test_empty_successful_history_is_distinct_from_measured_zero(self):
+        for value, expected, code in (([], "", "EMPTY"),
+                                     ([{"date": "2026-10-22", "value": 0}],
+                                      0, "OK")):
+            with self.subTest(value=value):
+                response = Mock(status_code=200)
+                response.json.return_value = {"history": value}
+                requests = SimpleNamespace(
+                    request=Mock(return_value=response),
+                    exceptions=SimpleNamespace(ConnectionError=ConnectionError,
+                                               Timeout=TimeoutError),
+                )
+                status = {}
+                with patch.dict(sys.modules, {"requests": requests}):
+                    result = yw.indexed_pages("/base", {}, "2026-10-21",
+                                              "2026-10-22", status)
+                self.assertEqual(result, expected)
+                self.assertEqual(status, {"pages in search": code})
+
+    def test_empty_total_response_has_its_own_status(self):
+        status = {}
+        with patch.object(yw, "request_yandex", return_value={"indicators": {}}):
+            self.assertIsNone(yw.site_totals("/base", {}, "2026-10-21",
+                                             "2026-10-22", status))
+        self.assertEqual(status, {"total search history": "EMPTY"})
+
+    def test_zero_totals_are_preserved_as_actual_measurements(self):
+        values = {"indicators": {
+            "TOTAL_SHOWS": [{"date": "2026-10-21", "value": 0}],
+            "TOTAL_CLICKS": [{"date": "2026-10-21", "value": 0}],
+        }}
+        with patch.object(yw, "request_yandex", return_value=values):
+            result = yw.site_totals("/base", {}, "2026-10-21", "2026-10-22")
+        self.assertEqual(result, ["2026-10-21", "2026-10-22", 0, 0, "", 1])
+
+    def test_empty_popular_queries_are_not_reported_as_received_data(self):
+        status = {}
+        with patch.object(yw, "request_yandex", return_value={"queries": []}):
+            self.assertEqual(yw.popular_queries("/base", {}, "2026-10-21",
+                                                "2026-10-22", status), [])
+        self.assertEqual(status, {"popular queries": "EMPTY"})
+
+    def test_private_comment_distinguishes_three_endpoint_outcomes(self):
+        comment = yw.availability_comment({
+            "pages in search": "HOST_NOT_INDEXED",
+            "total search history": "EMPTY",
+            "popular queries": "STORED",
+        })
+        self.assertIn("HOST_NOT_INDEXED", comment)
+        self.assertIn("HTTP 200", comment)
+        self.assertIn("период уже сохранён", comment)
 
     def test_priority_reindex_requires_explicit_manual_flag(self):
         with patch.dict(os.environ, {"DLV_YANDEX_RECRAWL": "false"}):

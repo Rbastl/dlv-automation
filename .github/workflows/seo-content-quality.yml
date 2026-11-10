@@ -13,6 +13,8 @@ on:
       - "scripts/test_probe_production_https.py"
       - "scripts/seo_search_analytics.py"
       - "scripts/test_seo_search_analytics.py"
+      - "scripts/yandex_webmaster_analytics.py"
+      - "scripts/test_yandex_webmaster_analytics.py"
       - ".github/workflows/seo-content-quality.yml"
 
 permissions:
@@ -209,4 +211,3 @@ jobs:
           assert any(node.findtext("link") == ai_url for node in rss_items), "RSS lacks AI analysis"
           print("PASS: 50 URLs, V6 service cards, 3 scoped pages, marking, portfolio and calculator")
           PY
-
